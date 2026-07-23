@@ -1,0 +1,23 @@
+Source Location Report
+Summary report:
+DEW5LIVE objects:
+    Objects with source in library DEW5LIVE: 14
+
+Detail report:
+DEW5LIVE objects:
+    Objects with source in library DEW5LIVE:
+        *MODULE RPGLE   DEW5LIVE/CUSMAIN                    
+        *FILE DSPF      DEW5LIVE/MAINMENU                   
+        *MODULE RPGLE   DEW5LIVE/CUSMNT                     
+        *FILE LF        DEW5LIVE/CUSMSTL1                   
+        *FILE PF        DEW5LIVE/CUSMST                     
+        *FILE DSPF      DEW5LIVE/MNTMENU                    
+        *MODULE RPGLE   DEW5LIVE/SCHNAM                     
+        *FILE LF        DEW5LIVE/CUSMSTL3                   
+        *FILE DSPF      DEW5LIVE/SCHNAMD                    
+        *MODULE RPGLE   DEW5LIVE/SCHZIP                     
+        *FILE LF        DEW5LIVE/CUSMSTL2                   
+        *FILE DSPF      DEW5LIVE/SCHZIPD                    
+        *PGM RPGLE      DEW5LIVE/SCHNAMRPG                  
+        *CMD            DEW5LIVE/CUSTMAINT                  
+End of Source Location Report.

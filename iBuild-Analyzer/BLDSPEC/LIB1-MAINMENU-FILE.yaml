@@ -1,0 +1,29 @@
+---
+targets:
+  LIB1-MAINMENU-FILE :
+    objlib: LIB1
+    objname: MAINMENU
+    objtype: FILE
+    objattr: DSPF
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QDDSSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: MAINMENU
+    requisiteyamlrecords :
+      - LIBL-QDDSSRC-SRCMBR-MAINMENU
+    command: EDOCRTOBJ
+    parameters:
+      - "BLDTGT($(LIB1)/MAINMENU)"
+      - "OBJTYPE(*FILE)"
+      - "OBJATTR(DSPF)"
+      - "CMD(CRTDSPF)"
+      - "CMDPARMS(' FILE($(LIB1)/MAINMENU) SRCFILE(QDDSSRC) SRCMBR(MAINMENU) DFRWRT(*YES) RSTDSP(*NO)')"
+  LIBL-QDDSSRC-SRCMBR-MAINMENU :
+    objlib: "*LIBL"
+    objname: QDDSSRC
+    objtype: SRCMBR
+    mbrname: MAINMENU

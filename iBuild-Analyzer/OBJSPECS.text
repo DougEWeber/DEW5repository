@@ -1,0 +1,43 @@
+Object Selection Report (*OBJSEL)
+Input object selection Criteria:
+   DEW5LIVE/*ALL (*PGM *SRVPGM *SQLPKG *MODULE *BNDDIR *CMD *MSGF *FILE *MENU *PNLGRP *NOTTGT) ~
+
+Result of object selection:
+   DEW5LIVE/*ALL (*PGM *SRVPGM *SQLPKG *MODULE *BNDDIR *CMD *MSGF *FILE *MENU *PNLGRP *NOTTGT) ~
+     DEW5LIVE
+          *PGM
+               CUSTMAINT   RPGLE   
+               SCHNAMRPG   RPGLE   
+          *MODULE
+               CUSMAIN     RPGLE   
+               CUSMNT      RPGLE   
+               SCHNAM      RPGLE   
+               SCHZIP      RPGLE   
+          *CMD
+               CUSTMAINT           
+          *FILE
+               CUSMST      PF      
+               CUSMSTL1    LF      
+               CUSMSTL2    LF      
+               CUSMSTL3    LF      
+               MAINMENU    DSPF    
+               MNTMENU     DSPF    
+               QCLSRC      PF      
+               QCMDSRC     PF      
+               QDDSSRC     PF      
+               QRPGLESRC   PF      
+               QSQLSRC     PF      
+               QTXTSRC     PF      
+               SCHNAMD     DSPF    
+               SCHZIPD     DSPF    
+          *DTAARA
+               ERAALZDIR           
+               ERADIR1             
+               ERALIB1             
+               ERALIB2             
+               ERAMSTLIB           
+               GITREPO             
+               IGITOFFSET          
+               IGITPRPCTL          
+               LASTSAVE            
+End of Object Selection Report
