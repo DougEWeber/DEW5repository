@@ -1,0 +1,28 @@
+#!/usr/bin/env expect
+#
+# Sanity test: duplicate-add rejection. Unlike vendors (system-generated
+# ID), customer number is user-supplied, so Add has a real collision
+# case to check: attempting to add a customer number that's already on
+# file must be rejected with "CUSTOMER ALREADY ON FILE", not silently
+# overwrite the existing record.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] cusmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .customer_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .customer_state -- run test_c1_add.exp first"
+    exit 1
+}
+source $state_file
+
+open_custmaint
+set screen [add_duplicate_customer $::CUST]
+
+if {![string match "*ALREADY ON FILE*" $screen]} {
+    test_fail "expected 'CUSTOMER ALREADY ON FILE' when re-adding customer $::CUST" $screen
+}
+
+pass "re-adding existing customer $::CUST is correctly rejected"

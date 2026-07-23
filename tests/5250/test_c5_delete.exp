@@ -1,0 +1,40 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Delete. Deletes the customer created by test_c1_add.exp
+# (confirming with Enter, not F12 which would cancel), then reconnects
+# fresh and confirms Display now reports CUSTOMER NOT ON FILE.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] cusmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .customer_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .customer_state -- run test_c1_add.exp first"
+    exit 1
+}
+source $state_file
+
+open_custmaint
+set after_delete [delete_customer $::CUST]
+
+if {[string match "*NOT ON FILE*" $after_delete] || [string match "*error*" $after_delete]} {
+    test_fail "unexpected error text present on HDRSCN after Delete" $after_delete
+}
+if {![string match "*CUSTOMER FILE MAINTENANCE*" $after_delete]} {
+    test_fail "did not land back on HDRSCN after Delete" $after_delete
+}
+close_session
+
+# Fresh session to verify the delete was actually persisted.
+open_custmaint
+set screen [display_customer $::CUST]
+
+if {![string match "*NOT ON FILE*" $screen]} {
+    test_fail "customer $::CUST still found on Display after Delete" $screen
+}
+
+file delete -force $state_file
+
+pass "customer $::CUST deleted and confirmed gone via Display in a fresh session"

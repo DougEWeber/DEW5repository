@@ -1,0 +1,36 @@
+#!/usr/bin/env expect
+#
+# Generic screen-capture and pass/fail reporting helpers shared by every
+# app-specific helper file (vndmnt_helpers.exp, cusmnt_helpers.exp, ...)
+# and test script in this directory. Source this after lib.exp.
+
+# Reads all currently-buffered output until a quiet period, rather than
+# returning on the very first byte (which can catch a mid-redraw
+# screen). Returns the ANSI-stripped text.
+proc drain_screen {} {
+    global spawn_id timeout expect_out
+    set saved_timeout $timeout
+    set timeout 3
+    set buf ""
+    expect {
+        -re ".+" { append buf $expect_out(buffer); exp_continue }
+        timeout { }
+    }
+    set timeout $saved_timeout
+    return [strip_ansi $buf]
+}
+
+proc pass {msg} {
+    puts "PASS: $msg"
+    close_session
+    exit 0
+}
+
+proc test_fail {msg screen} {
+    puts "FAIL: $msg"
+    puts "----- screen at failure -----"
+    puts $screen
+    puts "-----------------------------"
+    catch { close_session }
+    exit 1
+}

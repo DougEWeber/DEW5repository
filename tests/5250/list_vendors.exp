@@ -1,0 +1,36 @@
+#!/usr/bin/env expect
+#
+# Manual verification: sign on, ADDLIBLE DEW5DEVDEW, run VNDMAINT, press
+# F9 (List) and see what happens. Prints the fully-settled screen buffer
+# at each step (drains output until a quiet period, rather than matching
+# on the first byte that arrives, which can catch a mid-redraw screen).
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+
+proc drain_screen {label} {
+    global spawn_id timeout
+    set buf ""
+    expect {
+        -re ".+" { append buf $expect_out(buffer); exp_continue }
+        timeout { }
+    }
+    puts "----- $label -----"
+    puts [strip_ansi $buf]
+    puts "-----------------------------------"
+}
+
+connect_and_signon
+add_library $::LIB
+
+send -- "VNDMAINT\r"
+set timeout 3
+drain_screen "after launching VNDMAINT"
+set timeout 15
+
+press F9
+set timeout 3
+drain_screen "after F9 (List)"
+set timeout 15
+
+close_session
