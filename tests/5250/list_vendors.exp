@@ -5,7 +5,7 @@
 # at each step (drains output until a quiet period, rather than matching
 # on the first byte that arrives, which can catch a mid-redraw screen).
 
-source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
 source [file join [file dirname [info script]] lib.exp]
 
 proc drain_screen {label} {
