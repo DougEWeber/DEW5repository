@@ -6,7 +6,7 @@
 # file must be rejected with "CUSTOMER ALREADY ON FILE", not silently
 # overwrite the existing record.
 
-source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
 source [file join [file dirname [info script]] lib.exp]
 source [file join [file dirname [info script]] report_helpers.exp]
 source [file join [file dirname [info script]] cusmnt_helpers.exp]

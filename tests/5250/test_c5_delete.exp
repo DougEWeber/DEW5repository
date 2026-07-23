@@ -4,7 +4,7 @@
 # (confirming with Enter, not F12 which would cancel), then reconnects
 # fresh and confirms Display now reports CUSTOMER NOT ON FILE.
 
-source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
 source [file join [file dirname [info script]] lib.exp]
 source [file join [file dirname [info script]] report_helpers.exp]
 source [file join [file dirname [info script]] cusmnt_helpers.exp]
