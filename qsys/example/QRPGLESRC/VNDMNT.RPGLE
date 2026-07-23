@@ -13,7 +13,8 @@
 
      Fvndmstl1  uf a e           k disk
      Fvndmstl2  if   e           k disk
-     Fvndscn    cf   e             workstn indds(indicators)
+     Fvndscn    cf   e             workstn sfile(vndlsfl:sflRrn)
+     F                                     indds(indicators)
 
       // Field definitions:
 
@@ -27,7 +28,10 @@
      D   prevKey                       n   overlay(indicators:12)
      D   vendNotFound                  n   overlay(indicators:52)
      D   sflClear                      n   overlay(indicators:41)
-     D   sflDisplay                    n   overlay(indicators:42)
+     D   sflCtlDisp                    n   overlay(indicators:42)
+     D   sflDisplay                    n   overlay(indicators:43)
+
+     D sflRrn          s              5p 0
 
       // Key list definitions:
 
@@ -154,17 +158,24 @@
           sflClear = *off;
 
           // Load one subfile record per vendor, in name order
+          sflRrn = 0;
           setll *loval vndmstl2;
           read vndmstl2;
           dow not %eof(vndmstl2);
+             sflRrn += 1;
              write vndlsfl;
              read vndmstl2;
           enddo;
 
-          // Display the loaded subfile
-          sflDisplay = *on;
+          // Display the loaded subfile. SFLDSP must stay off when
+          // the subfile has zero records -- turning it on for an
+          // empty subfile causes a device error. SFLDSPCTL (the
+          // control record's own header) stays on either way.
+          sflDisplay = (sflRrn > 0);
+          sflCtlDisp = *on;
           exfmt vndlctl;
           sflDisplay = *off;
+          sflCtlDisp = *off;
        endsr;  // end of subroutine ListSub
        //****************************************************************
        //    SUBROUTINE - SetMaintenanceMode                            *

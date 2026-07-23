@@ -1,0 +1,19 @@
+#!/usr/bin/env expect
+#
+# Sanity test: error path. Displaying a vendor number that doesn't exist
+# should show the "VENDOR NOT ON FILE" error message, not crash or
+# silently show stale/wrong data.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] vndmnt_helpers.exp]
+
+open_vndmnt
+set screen [display_vendor "99999"]
+
+if {![string match "*NOT ON FILE*" $screen]} {
+    test_fail "expected 'VENDOR NOT ON FILE' for a nonexistent vendor number" $screen
+}
+
+pass "displaying a nonexistent vendor number correctly shows NOT ON FILE"

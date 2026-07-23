@@ -1,0 +1,40 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Add. Creates a new vendor with a unique, easily-identified
+# name, confirms the system assigned a vendor number and that no error
+# appears back on HDRSCN, then saves state for the other tests.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] vndmnt_helpers.exp]
+
+# Uppercase throughout: VNDBLD's Name/Address input fields uppercase
+# whatever is typed, so a mixed-case expected value would never match
+# what actually ends up on screen.
+set stamp [clock seconds]
+set name  "ZZTEST $stamp"
+set addr  "1 SANITY TEST WAY"
+set phone "555-0100"
+
+open_vndmnt
+lassign [add_vendor $name $addr $phone] vend after
+
+if {$vend eq ""} {
+    test_fail "no vendor number was scraped from the Add screen" $after
+}
+if {[string match "*NOT ON FILE*" $after] || [string match "*error*" $after]} {
+    test_fail "error text present on HDRSCN after Add" $after
+}
+if {![string match "*VENDOR FILE MAINTENANCE*" $after]} {
+    test_fail "did not land back on HDRSCN after Add" $after
+}
+
+set f [open [file join [file dirname [info script]] .vendor_state] w]
+puts $f "set ::VEND  \"$vend\""
+puts $f "set ::NAME  \"$name\""
+puts $f "set ::ADDR  \"$addr\""
+puts $f "set ::PHONE \"$phone\""
+close $f
+
+pass "added vendor $vend ($name)"

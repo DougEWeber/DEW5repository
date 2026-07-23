@@ -1,0 +1,158 @@
+#!/usr/bin/env expect
+#
+# Generic helpers for driving an IBM i (iSeries/AS400) 5250 session over
+# telnet with expect. See ../SKILL.md for the full technique and
+# ../references/gotchas.md for the protocol details behind these helpers.
+#
+# Usage: source this file after sourcing a config.exp that sets ::HOST,
+# ::PORT, ::USER, ::PASS, and (optionally) ::LIB -- see config.exp.template.
+
+if {[info exists ::HOST] == 0} {
+    puts "lib.exp: no ::HOST set -- source a config.exp first (see config.exp.template)"
+    exit 1
+}
+
+set ::timeout 15
+
+# PF/AID key encoding for a 5250-over-ANSI (VT100) telnet gateway.
+# Confirmed live: F3, F5-F10, F12, ROLLUP. F1/F2/F4/F11/ROLLDOWN follow the
+# same documented vt220 tables (SS3 for F1-F4, CSI ~ for F5+) but were not
+# independently exercised -- verify with a quick manual probe (see
+# references/gotchas.md's "Verifying key codes on a new system" section)
+# before relying on them.
+array set ::PFKEY {
+    F1  "\x1bOP"
+    F2  "\x1bOQ"
+    F3  "\x1bOR"
+    F4  "\x1bOS"
+    F5  "\x1b\[15~"
+    F6  "\x1b\[17~"
+    F7  "\x1b\[18~"
+    F8  "\x1b\[19~"
+    F9  "\x1b\[20~"
+    F10 "\x1b\[21~"
+    F11 "\x1b\[23~"
+    F12 "\x1b\[24~"
+    ROLLUP   "\x1b\[6~"
+    ROLLDOWN "\x1b\[5~"
+}
+
+# Strips ANSI/VT100 escape sequences from a captured screen buffer. Do
+# this before regexp-scraping a value or printing a screen for a human --
+# escape codes contain digit characters (e.g. "\x1b[0m") that corrupt
+# naive numeric-field patterns, and they make raw dumps hard to read.
+proc strip_ansi {text} {
+    regsub -all {\x1b\[[0-9;]*[a-zA-Z]} $text {} clean
+    return $clean
+}
+
+# --- low level key/field helpers ------------------------------------------
+
+proc press {name} {
+    global spawn_id
+    send -- $::PFKEY($name)
+    sleep 0.3
+}
+
+proc type_field {text} {
+    global spawn_id
+    send -- $text
+    sleep 0.15
+}
+
+# Types a field's value and immediately presses the AID key that submits
+# the screen (the normal pattern: type an id, then press the F-key for the
+# action you want, exactly like a user would).
+proc submit {text key} {
+    global spawn_id
+    send -- "$text$::PFKEY($key)"
+    sleep 0.3
+}
+
+proc enter {} {
+    global spawn_id
+    send -- "\r"
+    sleep 0.3
+}
+
+# --- connection lifecycle --------------------------------------------------
+
+# Connects and signs on, tolerating zero or more interstitial
+# "Press Enter to continue" message screens (e.g. leftover message queue
+# notices) before the command line ("===>") appears. Fails loudly instead
+# of hanging if sign-on is rejected.
+proc connect_and_signon {} {
+    global spawn_id timeout
+    spawn telnet $::HOST $::PORT
+    expect {
+        "Sign On" { }
+        timeout   { fail_hard "timed out waiting for the Sign On screen" }
+        eof       { fail_hard "connection closed before the Sign On screen appeared" }
+    }
+    send -- "$::USER\t$::PASS\r"
+
+    for {set i 0} {$i < 5} {incr i} {
+        expect {
+            "Press Enter to continue" { sleep 0.3; send -- "\r"; sleep 0.3 }
+            "===>"                     { return }
+            "not correct"              { fail_hard "sign-on rejected -- check ::USER/::PASS" }
+            timeout                    { fail_hard "timed out signing on" }
+        }
+    }
+    fail_hard "too many interstitial message screens at sign-on"
+}
+
+# Adds a library to the library list -- common on IBM i when the objects
+# you want to run aren't on the signed-on user's default library list.
+# Skip this call entirely if that doesn't apply to your target system.
+proc add_library {lib} {
+    global spawn_id timeout
+    send -- "ADDLIBLE $lib\r"
+    expect {
+        "not found" { fail_hard "library $lib not found" }
+        "===>"      { sleep 0.3 }
+        timeout     { fail_hard "timed out running ADDLIBLE $lib" }
+    }
+}
+
+# Connects, signs on, optionally adds a library, then runs a CL command or
+# launches a program, waiting for $pattern to confirm its first screen
+# appeared. Pass lib as "" to skip the ADDLIBLE step.
+proc open_app {cmd pattern {lib ""}} {
+    global spawn_id timeout
+    connect_and_signon
+    if {$lib ne ""} {
+        add_library $lib
+    }
+    send -- "$cmd\r"
+    expect {
+        -re $pattern { sleep 0.3 }
+        "not found"   { fail_hard "command $cmd not found" }
+        timeout       { fail_hard "timed out launching $cmd, expected to see: $pattern" }
+    }
+}
+
+proc close_session {} {
+    global spawn_id
+    catch {
+        press F3
+        press F3
+        press F3
+    }
+    catch { close }
+    catch { wait }
+}
+
+# --- diagnostics ------------------------------------------------------------
+
+# Prints the current (ANSI-stripped) screen buffer and exits non-zero.
+# Call this from your own timeout/error branches so a failure always shows
+# what was actually on screen instead of just "timed out".
+proc fail_hard {reason} {
+    puts "FAIL: $reason"
+    puts "----- last screen buffer -----"
+    catch { puts [strip_ansi $expect_out(buffer)] }
+    puts "------------------------------"
+    catch { close_session }
+    exit 1
+}
