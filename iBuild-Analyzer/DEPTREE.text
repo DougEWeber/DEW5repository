@@ -26,6 +26,8 @@ Dependency Tree Report (*DEPTREE)
         *SRCMBR         *LIBL/QDDSSRC          (SCHZIPD)
   *PGM RPGLE      LIB1/SCHNAMRPG
     *SRCMBR         *LIBL/QRPGLESRC          (SCHNAMRPG)
+  *PGM RPGLE      LIB1/VNDMNT
+    *SRCMBR         *LIBL/QRPGLESRC          (VNDMNT)
   *MODULE RPGLE   LIB1/CUSMAIN
     *SRCMBR         *LIBL/QRPGLESRC          (CUSMAIN)
     *FILE DSPF      LIB1/MAINMENU
@@ -88,6 +90,24 @@ Dependency Tree Report (*DEPTREE)
       *SRCMBR         *LIBL/QDDSSRC          (CUSMSTL2)
       *FILE PF        LIB1/CUSMST
         *SRCMBR         *LIBL/QDDSSRC          (CUSMST)
+  *FILE PF        LIB1/VNDMST
+    *SRCMBR         *LIBL/QDDSSRC          (VNDMST)
+  *FILE LF        LIB1/VNDMSTL1
+    *SRCMBR         *LIBL/QDDSSRC          (VNDMSTL1)
+    *FILE PF        LIB1/VNDMST
+      *SRCMBR         *LIBL/QDDSSRC          (VNDMST)
+  *FILE LF        LIB1/VNDMSTL2
+    *SRCMBR         *LIBL/QDDSSRC          (VNDMSTL2)
+    *FILE PF        LIB1/VNDMST
+      *SRCMBR         *LIBL/QDDSSRC          (VNDMST)
+  *FILE DSPF      LIB1/VNDSCN
+    *SRCMBR         *LIBL/QDDSSRC          (VNDSCN)
+    *FILE LF        LIB1/VNDMSTL1
+      *SRCMBR         *LIBL/QDDSSRC          (VNDMSTL1)
+      *FILE PF        LIB1/VNDMST
+        *SRCMBR         *LIBL/QDDSSRC          (VNDMST)
   *CMD            LIB1/CUSTMAINT
     *SRCMBR         *LIBL/QCMDSRC          (CUSTMAINT)
+  *CMD            LIB1/VNDMAINT
+    *SRCMBR         *LIBL/QCMDSRC          (VNDMAINT)
 End of Dependency Tree Report
