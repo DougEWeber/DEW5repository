@@ -1,0 +1,91 @@
+#!/usr/bin/env expect
+#
+# App-specific helpers for driving the CUSTMAINT/CUSMNT (customer
+# maintenance) program, built on top of lib.exp's generic primitives.
+# Source this after config.exp and lib.exp (and, for drain_screen,
+# vndmnt_helpers.exp -- shared across both test suites).
+#
+# Differences from the vendor program that shape these procs:
+#  - Customer number is user-supplied, not system-generated, so Add can
+#    collide with an existing record ("CUSTOMER ALREADY ON FILE").
+#  - CUSTMAINT lands on a main menu (CUSMAIN); F5 from there enters
+#    maintenance mode (CUSMNT) and its own HDRSCN prompt.
+#  - Address is 5 fields (Addr1, Addr2, City, State, Zip), not 2. State
+#    is exactly 2 characters wide, which auto-advances the cursor to Zip
+#    without an explicit Tab -- see the "Field auto-advance" gotcha.
+#  - Delete exists (F7); List does not.
+
+# Signs on, ADDLIBLEs $::LIB, launches CUSTMAINT, presses F5 from the
+# main menu to enter maintenance mode. Returns the settled HDRSCN
+# (customer maintenance prompt) screen text.
+proc open_custmaint {} {
+    global spawn_id timeout
+    connect_and_signon
+    add_library $::LIB
+    send -- "CUSTMAINT\r"
+    set main_menu [drain_screen]
+    if {![string match "*CUSTOMER MAIN INQUIRY*" $main_menu]} {
+        fail_hard "did not reach the CUSTOMER MAIN INQUIRY menu:\n$main_menu"
+    }
+    press F5
+    return [drain_screen]
+}
+
+# From HDRSCN: key a customer number, press F5 (Add), fill in the
+# customer's data, submit. Returns the settled HDRSCN screen text shown
+# afterward (check it for "CUSTOMER ALREADY ON FILE" if testing the
+# duplicate-add path).
+proc add_customer {cust name addr1 addr2 city state zip} {
+    global spawn_id timeout
+    send -- "$cust"
+    press F5
+    drain_screen
+    send -- "$name\t$addr1\t$addr2\t$city\t$state$zip\r"
+    return [drain_screen]
+}
+
+# From HDRSCN: key a customer number and press F5 (Add), for the case
+# where the number is expected to already be on file. AddSub checks for
+# an existing record and bails out (leavesr) BEFORE ever showing the add
+# screen, so unlike add_customer, this does not attempt to fill in any
+# fields -- it just returns the settled HDRSCN screen text, which should
+# carry the "CUSTOMER ALREADY ON FILE" error.
+proc add_duplicate_customer {cust} {
+    global spawn_id timeout
+    send -- "$cust"
+    press F5
+    return [drain_screen]
+}
+
+# From HDRSCN: key a customer number and press F8 (Display). Returns the
+# settled screen text.
+proc display_customer {cust} {
+    global spawn_id timeout
+    send -- "$cust"
+    press F8
+    return [drain_screen]
+}
+
+# From HDRSCN: key a customer number, press F6 (Update), overtype the
+# fields with new values, submit. Returns the settled HDRSCN screen text
+# shown afterward.
+proc update_customer {cust name addr1 addr2 city state zip} {
+    global spawn_id timeout
+    send -- "$cust"
+    press F6
+    drain_screen
+    send -- "$name\t$addr1\t$addr2\t$city\t$state$zip\r"
+    return [drain_screen]
+}
+
+# From HDRSCN: key a customer number, press F7 (Delete), confirm with
+# Enter (not F12, which would cancel). Returns the settled HDRSCN screen
+# text shown afterward.
+proc delete_customer {cust} {
+    global spawn_id timeout
+    send -- "$cust"
+    press F7
+    drain_screen
+    enter
+    return [drain_screen]
+}

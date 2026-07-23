@@ -90,12 +90,12 @@
      A          R VNDLCTL                   SFLCTL(VNDLSFL)
      A                                      TEXT('VENDOR LIST - CONTROL')
      A                                      CA12(12 'PREVIOUS SCREEN')
-     A  42                                  SFLDSP
+     A  43                                  SFLDSP
      A  42                                  SFLDSPCTL
      A  41                                  SFLCLR
      A                                      SFLSIZ(0200)
      A                                      SFLPAG(0016)
-     A  42                                  SFLEND(*MORE)
+     A  43                                  SFLEND(*MORE)
      A            MODE           8   O  1  4DSPATR(HI)
      A                                  1 13'MODE'
      A                                      DSPATR(HI)

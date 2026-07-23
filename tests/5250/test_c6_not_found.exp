@@ -1,0 +1,20 @@
+#!/usr/bin/env expect
+#
+# Sanity test: error path. Displaying a customer number that doesn't
+# exist should show the "CUSTOMER NOT ON FILE" error message, not crash
+# or silently show stale/wrong data. Independent of .customer_state --
+# uses a number reserved by convention for "definitely not real".
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] cusmnt_helpers.exp]
+
+open_custmaint
+set screen [display_customer "99999"]
+
+if {![string match "*NOT ON FILE*" $screen]} {
+    test_fail "expected 'CUSTOMER NOT ON FILE' for a nonexistent customer number" $screen
+}
+
+pass "displaying a nonexistent customer number correctly shows NOT ON FILE"

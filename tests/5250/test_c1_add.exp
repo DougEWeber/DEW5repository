@@ -1,0 +1,52 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Add. Creates a new customer with a unique, easily-
+# identified name under a fresh (very unlikely to collide) customer
+# number, confirms no error appears back on HDRSCN, then saves state
+# for the other tests.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] cusmnt_helpers.exp]
+
+# CUST is user-supplied here (unlike VEND, which the vendor program
+# generates) -- derive a 5-digit number from the clock to make
+# collisions with real data very unlikely.
+set cust  [expr {10000 + ([clock seconds] % 90000)}]
+# Uppercase throughout -- CSTBLD's input fields uppercase whatever is
+# typed, so a mixed-case expected value would never match the screen.
+# NAME is only 20 characters wide (narrower than the vendor program's
+# 30), so keep the stamp short -- a full epoch plus a suffix (as
+# test_c3_update.exp adds) can overflow the field, which shifts every
+# field after it by one (the same auto-advance gotcha, triggered mid-
+# entry instead of between fields).
+set stamp [expr {[clock seconds] % 1000000}]
+set name  "ZZTEST $stamp"
+set addr1 "1 SANITY TEST WAY"
+set addr2 "SUITE 100"
+set city  "SPRINGFIELD"
+set state "IL"
+set zip   "62701"
+
+open_custmaint
+set after [add_customer $cust $name $addr1 $addr2 $city $state $zip]
+
+if {[string match "*ALREADY ON FILE*" $after] || [string match "*error*" $after]} {
+    test_fail "error text present on HDRSCN after Add" $after
+}
+if {![string match "*CUSTOMER FILE MAINTENANCE*" $after]} {
+    test_fail "did not land back on HDRSCN after Add" $after
+}
+
+set f [open [file join [file dirname [info script]] .customer_state] w]
+puts $f "set ::CUST  \"$cust\""
+puts $f "set ::NAME  \"$name\""
+puts $f "set ::ADDR1 \"$addr1\""
+puts $f "set ::ADDR2 \"$addr2\""
+puts $f "set ::CITY  \"$city\""
+puts $f "set ::STATE \"$state\""
+puts $f "set ::ZIP   \"$zip\""
+close $f
+
+pass "added customer $cust ($name)"

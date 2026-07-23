@@ -1,0 +1,59 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Update. Uses the vendor created by test_01_add.exp,
+# changes its data, then reconnects fresh (per the skill's session-
+# reliability note: setup and verification in separate sessions) and
+# displays it again to confirm the change actually took.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] vndmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .vendor_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .vendor_state -- run test_01_add.exp first"
+    exit 1
+}
+source $state_file
+
+# Uppercase throughout -- see the comment in test_01_add.exp.
+set stamp [clock seconds]
+set new_name  "ZZTEST $stamp UPD"
+set new_addr  "2 SANITY TEST LOOP"
+set new_phone "555-0200"
+
+open_vndmnt
+set after_update [update_vendor $::VEND $new_name $new_addr $new_phone]
+
+if {[string match "*NOT ON FILE*" $after_update] || [string match "*error*" $after_update]} {
+    test_fail "error text present on HDRSCN after Update" $after_update
+}
+if {![string match "*VENDOR FILE MAINTENANCE*" $after_update]} {
+    test_fail "did not land back on HDRSCN after Update" $after_update
+}
+close_session
+
+# Fresh session to verify the update was actually persisted.
+open_vndmnt
+set screen [display_vendor $::VEND]
+
+if {![string match "*$new_name*" $screen]} {
+    test_fail "expected updated name '$new_name' not found on Display screen" $screen
+}
+if {![string match "*$new_addr*" $screen]} {
+    test_fail "expected updated address '$new_addr' not found on Display screen" $screen
+}
+if {![string match "*$new_phone*" $screen]} {
+    test_fail "expected updated phone '$new_phone' not found on Display screen" $screen
+}
+
+# Overwrite state with the now-current values for the List test.
+set f [open $state_file w]
+puts $f "set ::VEND  \"$::VEND\""
+puts $f "set ::NAME  \"$new_name\""
+puts $f "set ::ADDR  \"$new_addr\""
+puts $f "set ::PHONE \"$new_phone\""
+close $f
+
+pass "vendor $::VEND updated and re-verified via Display in a fresh session"

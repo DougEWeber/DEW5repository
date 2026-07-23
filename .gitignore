@@ -1,1 +1,4 @@
 .claude/ibmi-config.sh
+tests/5250/config.exp
+tests/5250/.vendor_state
+tests/5250/.customer_state
