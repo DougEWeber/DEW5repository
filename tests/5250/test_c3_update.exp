@@ -1,0 +1,63 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Update. Uses the customer created by test_c1_add.exp,
+# changes its data, then reconnects fresh (per the skill's session-
+# reliability note: setup and verification in separate sessions) and
+# displays it again to confirm the change actually took.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] cusmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .customer_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .customer_state -- run test_c1_add.exp first"
+    exit 1
+}
+source $state_file
+
+# Uppercase throughout, and kept short -- see the comment in
+# test_c1_add.exp about the 20-character NAME field.
+set stamp [expr {[clock seconds] % 1000000}]
+set new_name  "ZZTEST $stamp UPD"
+set new_addr1 "2 SANITY TEST LOOP"
+set new_addr2 "APT 9"
+set new_city  "SHELBYVILLE"
+set new_state "IN"
+set new_zip   "46176"
+
+open_custmaint
+set after_update [update_customer $::CUST $new_name $new_addr1 $new_addr2 $new_city $new_state $new_zip]
+
+if {[string match "*NOT ON FILE*" $after_update] || [string match "*error*" $after_update]} {
+    test_fail "error text present on HDRSCN after Update" $after_update
+}
+if {![string match "*CUSTOMER FILE MAINTENANCE*" $after_update]} {
+    test_fail "did not land back on HDRSCN after Update" $after_update
+}
+close_session
+
+# Fresh session to verify the update was actually persisted.
+open_custmaint
+set screen [display_customer $::CUST]
+
+foreach {label val} [list Name $new_name Addr1 $new_addr1 Addr2 $new_addr2 \
+                          City $new_city State $new_state Zip $new_zip] {
+    if {![string match "*$val*" $screen]} {
+        test_fail "expected updated $label '$val' not found on Display screen" $screen
+    }
+}
+
+# Overwrite state with the now-current values for later tests.
+set f [open $state_file w]
+puts $f "set ::CUST  \"$::CUST\""
+puts $f "set ::NAME  \"$new_name\""
+puts $f "set ::ADDR1 \"$new_addr1\""
+puts $f "set ::ADDR2 \"$new_addr2\""
+puts $f "set ::CITY  \"$new_city\""
+puts $f "set ::STATE \"$new_state\""
+puts $f "set ::ZIP   \"$new_zip\""
+close $f
+
+pass "customer $::CUST updated and re-verified via Display in a fresh session"

@@ -1,0 +1,64 @@
+#!/usr/bin/env expect
+#
+# App-specific helpers for driving the VNDMAINT (vendor maintenance)
+# program, built on top of lib.exp's generic primitives. Source this
+# after config.exp, lib.exp, and report_helpers.exp (for drain_screen).
+#
+# Per the skill's session-reliability note, each test script that uses
+# these procs should open its own fresh connection per logical step
+# (setup vs. verification) rather than chaining 3+ round trips into one
+# session.
+
+# Signs on, ADDLIBLEs $::LIB, launches VNDMAINT, and returns the
+# settled HDRSCN screen text.
+proc open_vndmnt {} {
+    global spawn_id timeout
+    connect_and_signon
+    add_library $::LIB
+    send -- "VNDMAINT\r"
+    return [drain_screen]
+}
+
+# From HDRSCN: press F5 (Add), fill in the vendor's data, submit. Returns
+# a dict-like list {vend screen} where vend is the system-assigned
+# vendor number scraped off the VNDBLD screen and screen is the settled
+# text of the HDRSCN screen shown after the add.
+proc add_vendor {name addr phone} {
+    global spawn_id timeout
+    press F5
+    set bld_screen [drain_screen]
+    if {![regexp {Vendor:\s*(\d+)} $bld_screen -> vend]} {
+        fail_hard "could not scrape vendor number off the Add screen:\n$bld_screen"
+    }
+    send -- "$name\t$addr\t$phone\r"
+    set after [drain_screen]
+    return [list $vend $after]
+}
+
+# From HDRSCN: key a vendor number and press F8 (Display). Returns the
+# settled screen text.
+proc display_vendor {vend} {
+    global spawn_id timeout
+    send -- "$vend"
+    press F8
+    return [drain_screen]
+}
+
+# From HDRSCN: key a vendor number, press F6 (Update), overtype the
+# fields with new values, submit. Returns the settled HDRSCN screen text
+# shown afterward.
+proc update_vendor {vend name addr phone} {
+    global spawn_id timeout
+    send -- "$vend"
+    press F6
+    drain_screen
+    send -- "$name\t$addr\t$phone\r"
+    return [drain_screen]
+}
+
+# From HDRSCN: press F9 (List). Returns the settled screen text.
+proc list_vendors_screen {} {
+    global spawn_id timeout
+    press F9
+    return [drain_screen]
+}

@@ -1,0 +1,34 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Display. Uses the vendor created by test_01_add.exp,
+# confirms the Display screen shows exactly the data that was entered.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] vndmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .vendor_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .vendor_state -- run test_01_add.exp first"
+    exit 1
+}
+source $state_file
+
+open_vndmnt
+set screen [display_vendor $::VEND]
+
+if {[string match "*NOT ON FILE*" $screen]} {
+    test_fail "vendor $::VEND reported NOT ON FILE" $screen
+}
+if {![string match "*$::NAME*" $screen]} {
+    test_fail "expected name '$::NAME' not found on Display screen" $screen
+}
+if {![string match "*$::ADDR*" $screen]} {
+    test_fail "expected address '$::ADDR' not found on Display screen" $screen
+}
+if {![string match "*$::PHONE*" $screen]} {
+    test_fail "expected phone '$::PHONE' not found on Display screen" $screen
+}
+
+pass "vendor $::VEND displays with the data it was created with"

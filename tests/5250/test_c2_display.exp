@@ -1,0 +1,30 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Display. Uses the customer created by test_c1_add.exp,
+# confirms the Display screen shows exactly the data that was entered.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] cusmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .customer_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .customer_state -- run test_c1_add.exp first"
+    exit 1
+}
+source $state_file
+
+open_custmaint
+set screen [display_customer $::CUST]
+
+if {[string match "*NOT ON FILE*" $screen]} {
+    test_fail "customer $::CUST reported NOT ON FILE" $screen
+}
+foreach {label val} [list Name $::NAME Addr1 $::ADDR1 Addr2 $::ADDR2 City $::CITY State $::STATE Zip $::ZIP] {
+    if {![string match "*$val*" $screen]} {
+        test_fail "expected $label '$val' not found on Display screen" $screen
+    }
+}
+
+pass "customer $::CUST displays with the data it was created with"

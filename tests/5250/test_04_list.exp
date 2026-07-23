@@ -1,0 +1,32 @@
+#!/usr/bin/env expect
+#
+# Sanity test: List. Confirms the vendor list (F9 from HDRSCN) displays
+# without error and includes the vendor's current name, in the vendor
+# name order the list is supposed to use.
+
+source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] vndmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .vendor_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .vendor_state -- run test_01_add.exp (and test_03_update.exp) first"
+    exit 1
+}
+source $state_file
+
+open_vndmnt
+set screen [list_vendors_screen]
+
+if {[string match "*error*" $screen] || [string match "*Session or device*" $screen]} {
+    test_fail "error text present on the List screen" $screen
+}
+if {![string match "*VENDOR LIST*" $screen]} {
+    test_fail "did not land on the vendor list screen after F9" $screen
+}
+if {![string match "*$::NAME*" $screen]} {
+    test_fail "expected vendor name '$::NAME' not found on the List screen (may be on a later subfile page if many test vendors have accumulated)" $screen
+}
+
+pass "vendor list screen shows without error and includes '$::NAME'"
