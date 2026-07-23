@@ -1,0 +1,34 @@
+---
+targets:
+  LIB1-VNDSCN-FILE :
+    objlib: LIB1
+    objname: VNDSCN
+    objtype: FILE
+    objattr: DSPF
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QDDSSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: VNDSCN
+      -
+        name: VNDMSTL1
+        lib: "*LIBL"
+        objtype: "FILE"
+    requisiteyamlrecords :
+      - LIBL-QDDSSRC-SRCMBR-VNDSCN
+      - LIB1-VNDMSTL1-FILE
+    command: EDOCRTOBJ
+    parameters:
+      - "BLDTGT($(LIB1)/VNDSCN)"
+      - "OBJTYPE(*FILE)"
+      - "OBJATTR(DSPF)"
+      - "CMD(CRTDSPF)"
+      - "CMDPARMS(' FILE($(LIB1)/VNDSCN) SRCFILE(QDDSSRC) SRCMBR(VNDSCN) DFRWRT(*YES) RSTDSP(*NO) TEXT(''Vendor Master Maintenance'')')"
+  LIBL-QDDSSRC-SRCMBR-VNDSCN :
+    objlib: "*LIBL"
+    objname: QDDSSRC
+    objtype: SRCMBR
+    mbrname: VNDSCN

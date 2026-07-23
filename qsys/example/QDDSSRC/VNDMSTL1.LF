@@ -1,0 +1,15 @@
+     A******************************************************************
+     A*     FILE NAME:  VNDMSTL1                                      *
+     A*  RELATED PGMS:  VNDMNT                                        *
+     A* RELATED FILES:  VNDMST  (PHYSICAL FILE)                       *
+     A*   DESCRIPTION:  THIS IS LOGICAL FILE VNDMSTL1.                *
+     A*                 IT CONTAINS ONE RECORD FORMAT CALLED VMLREC1. *
+     A*                 LOGICAL VIEW OF VENDOR MASTER FILE (VNDMST)   *
+     A*                 BY VENDOR NUMBER (VEND)                       *
+     A******************************************************************
+     A          R VMLREC1                   PFILE(VNDMST)
+     A            VEND
+     A            NAME
+     A            ADDR
+     A            PHONE
+     A          K VEND
