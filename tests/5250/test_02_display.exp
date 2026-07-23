@@ -3,7 +3,7 @@
 # Sanity test: Display. Uses the vendor created by test_01_add.exp,
 # confirms the Display screen shows exactly the data that was entered.
 
-source [file join [file dirname [info script]] config.exp]
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
 source [file join [file dirname [info script]] lib.exp]
 source [file join [file dirname [info script]] report_helpers.exp]
 source [file join [file dirname [info script]] vndmnt_helpers.exp]
