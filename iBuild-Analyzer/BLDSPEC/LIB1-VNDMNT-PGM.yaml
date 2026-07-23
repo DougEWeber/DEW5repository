@@ -1,0 +1,32 @@
+---
+targets:
+  LIB1-VNDMNT-PGM :
+    objlib: LIB1
+    objname: VNDMNT
+    objtype: PGM
+    objattr: RPGLE
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QRPGLESRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: VNDMNT
+    requisiteyamlrecords :
+      - LIBL-QRPGLESRC-SRCMBR-VNDMNT
+    command: CRTBNDRPG
+    parameters:
+      - "PGM($(LIB1)/VNDMNT)"
+      - "USRPRF(*USER)"
+      - "DFTACTGRP(*YES)"
+      - "SRCFILE(QRPGLESRC)"
+      - "SRCMBR(VNDMNT)"
+      - "TGTCCSID(37)"
+      - "SRTSEQ(*HEX)"
+      - "LANGID(*JOBRUN)"
+  LIBL-QRPGLESRC-SRCMBR-VNDMNT :
+    objlib: "*LIBL"
+    objname: QRPGLESRC
+    objtype: SRCMBR
+    mbrname: VNDMNT
