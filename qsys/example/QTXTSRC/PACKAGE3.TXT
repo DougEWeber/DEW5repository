@@ -1,0 +1,3 @@
+lib SRC TGT {*pgm *cmd *dspf exclude
+}
+lib  DSRC DTGT {*pf keepdata *lf}
