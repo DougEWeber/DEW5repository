@@ -1,0 +1,115 @@
+     A******************************************************************
+     A*     FILE NAME:  VNDSCN                                        *
+     A*  RELATED PGMS:  VNDMNT                                        *
+     A* RELATED FILES:  VNDMSTL1, VNDMSTL2  (LOGICAL FILES)           *
+     A*   DESCRIPTION:  THIS IS THE DISPLAY FILE VNDSCN. IT HAS 5     *
+     A*                 RECORD FORMATS.                               *
+     A******************************************************************
+     A                                      REF(VNDMSTL1)
+     A                                      CHGINPDFT(CS)
+     A                                      PRINT(QSYSPRT)
+     A                                      INDARA
+     A          R HDRSCN
+     A                                      TEXT('PROMPT FOR VENDOR NUMBER')
+     A                                      CA03(03 'END MAINTENANCE')
+     A                                      CF05(05 'ADD MODE')
+     A                                      CF06(06 'UPDATE MODE')
+     A                                      CF08(08 'DISPLAY MODE')
+     A                                      CF09(09 'LIST MODE')
+     A            MODE           8A  O  1  4DSPATR(HI)
+     A                                  1 13'MODE'
+     A                                      DSPATR(HI)
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 26'VENDOR FILE MAINTENANCE'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A            VEND      R     Y  I 10 25DSPATR(CS)
+     A  52                                  ERRMSG('VENDOR NOT ON FILE' +
+     A                                      52)
+     A                                 10 33'<--Enter Vendor Number'
+     A                                      DSPATR(HI)
+     A                                 23  4'F3 End Job'
+     A                                 23 21'F5 Add'
+     A                                 23 34'F6 Update'
+     A                                 23 50'F8 Display'
+     A                                 23 66'F9 List'
+     A          R VNDINQ
+     A                                      TEXT('DISPLAY/UPDATE VENDOR INFO')
+     A                                      CA12(12 'PREVIOUS SCREEN')
+     A            MODE           8   O  1  4DSPATR(HI)
+     A                                  1 13'MODE'
+     A                                      DSPATR(HI)
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 28'VENDOR FILE MAINTENANCE'
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A                                  4 14'Vendor:'
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A            VEND      R        O  4 25DSPATR(HI)
+     A            NAME      R        B  6 25DSPATR(CS)
+     A  04                                  DSPATR(PR)
+     A            ADDR      R        B  7 25DSPATR(CS)
+     A  04                                  DSPATR(PR)
+     A            PHONE     R        B  8 25DSPATR(CS)
+     A  04                                  DSPATR(PR)
+     A                                 23  2'F12 Cancel'
+     A            MODE1          8   O 23 13
+     A          R VNDBLD                    TEXT('ADD VENDOR RECORD')
+     A                                      CA12(12 'CANCEL ADDITION')
+     A            MODE           8   O  1  4DSPATR(HI)
+     A                                  1 13'MODE'     DSPATR(HI)
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 28'VENDOR FILE MAINTENANCE'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A                                  4 14'Vendor:' DSPATR(HI UL)
+     A            VEND      R        O  4 25DSPATR(HI)
+     A                                  6 20'Name'     DSPATR(HI)
+     A            NAME      R        I  6 25
+     A                                  7 17'Address'  DSPATR(HI)
+     A            ADDR      R        I  7 25
+     A                                  8 17'Phone'    DSPATR(HI)
+     A            PHONE     R        I  8 25
+     A                                 23  2'F12 Cancel Addition'
+     A          R VNDLSFL                   SFL
+     A            VEND      R        O  6  3DSPATR(CS)
+     A                                      EDTCDE(Z)
+     A            NAME      R        O  6 10
+     A            PHONE     R        O  6 42
+     A          R VNDLCTL                   SFLCTL(VNDLSFL)
+     A                                      TEXT('VENDOR LIST - CONTROL')
+     A                                      CA12(12 'PREVIOUS SCREEN')
+     A  42                                  SFLDSP
+     A  42                                  SFLDSPCTL
+     A  41                                  SFLCLR
+     A                                      SFLSIZ(0200)
+     A                                      SFLPAG(0016)
+     A  42                                  SFLEND(*MORE)
+     A            MODE           8   O  1  4DSPATR(HI)
+     A                                  1 13'MODE'
+     A                                      DSPATR(HI)
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 26'VENDOR LIST BY NAME'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A                                  4  3'Vendor'
+     A                                      DSPATR(HI UL)
+     A                                  4 10'Name'
+     A                                      DSPATR(HI UL)
+     A                                  4 42'Phone'
+     A                                      DSPATR(HI UL)
+     A                                  5  2'F12 Return   Roll Up/Down to page'
