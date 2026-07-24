@@ -1,0 +1,124 @@
+     A******************************************************************
+     A*     FILE NAME:  INVSCN                                        *
+     A*  RELATED PGMS:  INVMNT                                        *
+     A* RELATED FILES:  INVMSTL1, VNDMSTL1  (LOGICAL FILES)           *
+     A*   DESCRIPTION:  THIS IS THE DISPLAY FILE INVSCN. IT HAS 5     *
+     A*                 RECORD FORMATS.                               *
+     A******************************************************************
+     A                                      REF(INVMSTL1)
+     A                                      CHGINPDFT(CS)
+     A                                      PRINT(QSYSPRT)
+     A                                      INDARA
+     A          R HDRSCN
+     A                                      TEXT('PROMPT FOR ITEM ID')
+     A                                      CA03(03 'END MAINTENANCE')
+     A                                      CF05(05 'ADD MODE')
+     A                                      CF06(06 'UPDATE MODE')
+     A                                      CF08(08 'DISPLAY MODE')
+     A                                      CF09(09 'LIST MODE')
+     A            MODE           8A  O  1  4DSPATR(HI)
+     A                                  1 13'MODE'
+     A                                      DSPATR(HI)
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 24'INVENTORY FILE MAINTENANCE'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A            ITEMID    R        I 10 25DSPATR(CS)
+     A  51                                  ERRMSG('ITEM ALREADY ON FILE' 51)
+     A  52                                  ERRMSG('ITEM NOT ON FILE' 52)
+     A                                 10 33'<--Enter Item ID'
+     A                                      DSPATR(HI)
+     A                                 23  4'F3 End Job'
+     A                                 23 21'F5 Add'
+     A                                 23 34'F6 Update'
+     A                                 23 50'F8 Display'
+     A                                 23 66'F9 List'
+     A          R INVBLD                    TEXT('ADD INVENTORY ITEM')
+     A                                      CA12(12 'CANCEL ADDITION')
+     A            MODE           8   O  1  4DSPATR(HI)
+     A                                  1 13'MODE'     DSPATR(HI)
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 24'INVENTORY FILE MAINTENANCE'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A                                  4 14'Item:' DSPATR(HI UL)
+     A            ITEMID    R        O  4 27DSPATR(HI)
+     A                                  6 14'Description' DSPATR(HI)
+     A            DESCR     R   50   I  6 27
+     A                                  7 19'Vendor' DSPATR(HI)
+     A            VEND      R    5Y 0I  7 27
+     A  53                                  ERRMSG('VENDOR NOT ON FILE' 53)
+     A                                  9 20'Unit' DSPATR(HI)
+     A            UNIT      R        I  9 27
+     A                                 23  2'F12 Cancel Addition'
+     A          R INVINQ                    TEXT('DISPLAY/UPDATE INV ITEM')
+     A                                      CA12(12 'PREVIOUS SCREEN')
+     A            MODE           8   O  1  4DSPATR(HI)
+     A                                  1 13'MODE'
+     A                                      DSPATR(HI)
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 24'INVENTORY FILE MAINTENANCE'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A                                  4 14'Item:' DSPATR(HI UL)
+     A            ITEMID    R        O  4 27DSPATR(HI)
+     A                                  6 14'Description' DSPATR(HI)
+     A            DESCR     R        B  6 27DSPATR(CS)
+     A  04                                  DSPATR(PR)
+     A                                  7 19'Vendor' DSPATR(HI)
+     A            VEND      R     Y  B  7 27DSPATR(CS)
+     A  53                                  ERRMSG('VENDOR NOT ON FILE' 53)
+     A  04                                  DSPATR(PR)
+     A                                  8  6'Vendor Name' DSPATR(HI)
+     A            NAME      R        O  8 27REFFLD(NAME VNDMSTL1)
+     A                                  9 20'Unit' DSPATR(HI)
+     A            UNIT      R        B  9 27DSPATR(CS)
+     A  04                                  DSPATR(PR)
+     A                                 10  6'Qty On Hand' DSPATR(HI)
+     A            QOH       R        O 10 27
+     A                                 11  5'Qty On Order' DSPATR(HI)
+     A            QOO       R        O 11 27
+     A                                 12  8'Qty Pending' DSPATR(HI)
+     A            QPEND     R        O 12 27
+     A                                 13  1'Last Order Date' DSPATR(HI)
+     A            LORDDT    R        O 13 27
+     A                                 23  2'F12 Cancel'
+     A          R INVLSFL                   SFL
+     A            ITEMID    R        O  6  3DSPATR(CS)
+     A            DESCR     R        O  6 10
+     A            QOH       R        O  6 61EDTCDE(Z)
+     A          R INVLCTL                   SFLCTL(INVLSFL)
+     A                                      TEXT('INVENTORY LIST - CONTROL')
+     A                                      CA12(12 'PREVIOUS SCREEN')
+     A  43                                  SFLDSP
+     A  42                                  SFLDSPCTL
+     A  41                                  SFLCLR
+     A                                      SFLSIZ(0200)
+     A                                      SFLPAG(0016)
+     A  43                                  SFLEND(*MORE)
+     A            MODE           8   O  1  4DSPATR(HI)
+     A                                  1 13'MODE'
+     A                                      DSPATR(HI)
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 26'INVENTORY LIST'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A                                  4  3'Item'
+     A                                      DSPATR(HI UL)
+     A                                  4 10'Description'
+     A                                      DSPATR(HI UL)
+     A                                  4 61'On Hand'
+     A                                      DSPATR(HI UL)
+     A                                  5  2'F12 Return   Roll Up/Down to page'

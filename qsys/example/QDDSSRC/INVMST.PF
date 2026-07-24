@@ -1,0 +1,17 @@
+     A******************************************************************
+     A* FILE NAME:  INVMST                                            *
+     A* RELATED PGMS:  INVMNT, INVSELL                                *
+     A* RELATED FILES:  INVMSTL1 (LOGICAL FILE)                       *
+     A* DESCRIPTION:  THIS IS THE PHYSICAL FILE INVMST. IT HAS        *
+     A*          ONE RECORD FORMAT CALLED INVREC.                     *
+     A******************************************************************
+     A* INVENTORY MASTER FILE -- INVMST
+     A          R INVREC
+     A            ITEMID         5          TEXT('ITEM ID')
+     A            DESCR         50          TEXT('ITEM DESCRIPTION')
+     A            VEND           5  0       TEXT('VENDOR NUMBER')
+     A            UNIT          10          TEXT('UNIT OF MEASURE')
+     A            QOH            7  0       TEXT('QUANTITY ON HAND')
+     A            QOO            7  0       TEXT('QUANTITY ON ORDER')
+     A            LORDDT         8  0       TEXT('LAST ORDER DATE YYYYMMDD')
+     A            QPEND          7  0       TEXT('QTY PENDING - HELD ON ORDER')

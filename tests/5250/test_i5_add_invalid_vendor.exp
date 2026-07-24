@@ -1,0 +1,31 @@
+#!/usr/bin/env expect
+#
+# Sanity test: FK rejection on Add. The vendor on an item must already
+# exist on file (VNDMST) -- adding a new item against a vendor number
+# that doesn't exist must be rejected with "VENDOR NOT ON FILE", and
+# must not create the item.
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+
+set itemid "Y[format %04d [expr {[clock seconds] % 10000}]]"
+
+open_invmaint
+set screen [add_item $itemid "SHOULD NOT EXIST" 99999 "EACH"]
+
+if {![string match "*VENDOR NOT ON FILE*" $screen]} {
+    test_fail "expected 'VENDOR NOT ON FILE' when adding item $itemid against nonexistent vendor 99999" $screen
+}
+close_session
+
+# Fresh session: confirm the item was NOT created despite the rejected
+# vendor.
+open_invmaint
+set screen [display_item $itemid]
+if {![string match "*NOT ON FILE*" $screen]} {
+    test_fail "item $itemid should not have been created after a rejected Add, but Display did not report NOT ON FILE" $screen
+}
+
+pass "adding an item against a nonexistent vendor is correctly rejected, and no item was created"

@@ -1,0 +1,95 @@
+#!/usr/bin/env expect
+#
+# Sanity test: INVSELL (confirm quantity sold). Creates its own item
+# (rather than reusing .inventory_state's) since it needs to seed
+# QOH/QPEND to nonzero values -- there is no UI path that increases
+# QPEND from zero (no "receive into pending" function was requested),
+# so this test seeds it directly via SQL (RUNSQL over ssh), which
+# stands in for whatever real process would normally build a pending
+# order. That's a test-setup step, not something INVSELL itself does.
+#
+# Goes through INVSELTST (see qsys/example/QCLSRC/INVSELTST.CL) rather
+# than calling INVSELL directly: the generic CALL command's PARM syntax
+# doesn't reliably produce valid packed-decimal data for INVSELL's
+# QtySold parameter (confirmed: MCH1202 decimal-data error), and
+# INVSELTST also echoes INVSELL's Success/Msg output parameters back
+# via SNDPGMMSG, which show up inline on the Command Entry screen --
+# otherwise unobservable, since plain CALL doesn't echo them.
+#
+# Verifies both INVSELTST's reported Success/Msg AND INVSELL's real
+# black-box effect (QOH/QPEND actually changing, or not, via
+# display_item), not just one or the other.
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+
+set itemid "X[format %04d [expr {[clock seconds] % 10000}]]"
+
+open_invmaint
+set after [add_item $itemid "SELL TEST WIDGET" 1 "EACH"]
+if {[string match "*NOT ON FILE*" $after] || [string match "*error*" $after]} {
+    test_fail "error text present on HDRSCN after Add (setup for sell test)" $after
+}
+close_session
+
+# ----- Case 1: insufficient pending (qpend=0, qty=1) -- must reject,
+# quantities stay at zero.
+open_invmaint
+set screen [display_item $itemid]
+if {![string match "*0000000*" $screen]} {
+    test_fail "expected freshly-added item $itemid to start at zero quantities" $screen
+}
+close_session
+
+set result [invseltst_call $itemid 1]
+if {![string match "*Success=N*" $result] || ![string match "*INSUFFICIENT QUANTITY PENDING*" $result]} {
+    test_fail "expected Success=N / INSUFFICIENT QUANTITY PENDING when qpend=0" $result
+}
+close_session
+
+# ----- Seed QOH=20, QPEND=10 via SQL (test setup, not part of the
+# feature -- see header comment).
+exec ssh makedev "system \"RUNSQL SQL('UPDATE DEW5DEVDEW/INVMST SET QOH = 20, QPEND = 10 WHERE ITEMID = ''$itemid''') COMMIT(*NONE)\""
+
+# ----- Case 2: sufficient pending (qpend=10, qty=3) -- must succeed,
+# QOH 20->17, QPEND 10->7.
+set result [invseltst_call $itemid 3]
+if {![string match "*Success=Y*" $result]} {
+    test_fail "expected Success=Y when selling 3 against qpend=10" $result
+}
+close_session
+
+open_invmaint
+set screen [display_item $itemid]
+if {![string match "*0000017*" $screen]} {
+    test_fail "expected QOH=0000017 (20-3) after a successful sell" $screen
+}
+if {![string match "*0000007*" $screen]} {
+    test_fail "expected QPEND=0000007 (10-3) after a successful sell" $screen
+}
+close_session
+
+# ----- Case 3: over-quantity (qpend=7, qty=999) -- must reject,
+# quantities stay at 17/7.
+set result [invseltst_call $itemid 999]
+if {![string match "*Success=N*" $result] || ![string match "*INSUFFICIENT QUANTITY PENDING*" $result]} {
+    test_fail "expected Success=N / INSUFFICIENT QUANTITY PENDING when qty exceeds qpend" $result
+}
+close_session
+
+open_invmaint
+set screen [display_item $itemid]
+if {![string match "*0000017*" $screen] || ![string match "*0000007*" $screen]} {
+    test_fail "quantities changed after a rejected (over-quantity) sell -- should be unchanged at 17/7" $screen
+}
+close_session
+
+# ----- Case 4: nonexistent item.
+set result [invseltst_call "ZZZZZ" 1]
+if {![string match "*Success=N*" $result] || ![string match "*ITEM NOT ON FILE*" $result]} {
+    test_fail "expected Success=N / ITEM NOT ON FILE for a nonexistent item" $result
+}
+
+pass "INVSELL: rejects when nothing pending, succeeds and adjusts QOH/QPEND correctly when pending covers it, rejects and leaves quantities unchanged when the amount exceeds pending, rejects a nonexistent item"

@@ -1,0 +1,32 @@
+---
+targets:
+  LIB1-INVSELL-PGM :
+    objlib: LIB1
+    objname: INVSELL
+    objtype: PGM
+    objattr: RPGLE
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QRPGLESRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: INVSELL
+    requisiteyamlrecords :
+      - LIBL-QRPGLESRC-SRCMBR-INVSELL
+    command: CRTBNDRPG
+    parameters:
+      - "PGM($(LIB1)/INVSELL)"
+      - "USRPRF(*USER)"
+      - "DFTACTGRP(*YES)"
+      - "SRCFILE(QRPGLESRC)"
+      - "SRCMBR(INVSELL)"
+      - "TGTCCSID(37)"
+      - "SRTSEQ(*HEX)"
+      - "LANGID(*JOBRUN)"
+  LIBL-QRPGLESRC-SRCMBR-INVSELL :
+    objlib: "*LIBL"
+    objname: QRPGLESRC
+    objtype: SRCMBR
+    mbrname: INVSELL

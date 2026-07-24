@@ -1,0 +1,33 @@
+---
+targets:
+  LIB1-INVSELTST-PGM :
+    objlib: LIB1
+    objname: INVSELTST
+    objtype: PGM
+    objattr: CLLE
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QCLSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: INVSELTST
+    requisiteyamlrecords :
+      - LIBL-QCLSRC-SRCMBR-INVSELTST
+    command: CRTBNDCL
+    parameters:
+      - "PGM($(LIB1)/INVSELTST)"
+      - "USRPRF(*USER)"
+      - "TEXT('Test wrapper for INVSELL')"
+      - "DFTACTGRP(*YES)"
+      - "SRCFILE(QCLSRC)"
+      - "SRCMBR(INVSELTST)"
+      - "ALWRTVSRC(*YES)"
+      - "SRTSEQ(*HEX)"
+      - "LANGID(*JOBRUN)"
+  LIBL-QCLSRC-SRCMBR-INVSELTST :
+    objlib: "*LIBL"
+    objname: QCLSRC
+    objtype: SRCMBR
+    mbrname: INVSELTST
