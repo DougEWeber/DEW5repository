@@ -1,0 +1,39 @@
+---
+targets:
+  LIB1-INVSCN-FILE :
+    objlib: LIB1
+    objname: INVSCN
+    objtype: FILE
+    objattr: DSPF
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QDDSSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: INVSCN
+      -
+        name: INVMSTL1
+        lib: "*LIBL"
+        objtype: "FILE"
+      -
+        name: VNDMSTL1
+        lib: "*LIBL"
+        objtype: "FILE"
+    requisiteyamlrecords :
+      - LIBL-QDDSSRC-SRCMBR-INVSCN
+      - LIB1-INVMSTL1-FILE
+      - LIB1-VNDMSTL1-FILE
+    command: EDOCRTOBJ
+    parameters:
+      - "BLDTGT($(LIB1)/INVSCN)"
+      - "OBJTYPE(*FILE)"
+      - "OBJATTR(DSPF)"
+      - "CMD(CRTDSPF)"
+      - "CMDPARMS(' FILE($(LIB1)/INVSCN) SRCFILE(QDDSSRC) SRCMBR(INVSCN) DFRWRT(*YES) RSTDSP(*NO) TEXT(''Inventory Master Maintenance'')')"
+  LIBL-QDDSSRC-SRCMBR-INVSCN :
+    objlib: "*LIBL"
+    objname: QDDSSRC
+    objtype: SRCMBR
+    mbrname: INVSCN
