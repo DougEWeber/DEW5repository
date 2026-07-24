@@ -1,0 +1,20 @@
+#!/usr/bin/env expect
+#
+# Sanity test: error path. Displaying an item ID that doesn't exist
+# should show the "ITEM NOT ON FILE" error message, not crash or
+# silently show stale/wrong data. Independent of .inventory_state --
+# uses an ID reserved by convention for "definitely not real".
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+
+open_invmaint
+set screen [display_item "ZZZZZ"]
+
+if {![string match "*NOT ON FILE*" $screen]} {
+    test_fail "expected 'ITEM NOT ON FILE' for a nonexistent item ID" $screen
+}
+
+pass "displaying a nonexistent item ID correctly shows NOT ON FILE"

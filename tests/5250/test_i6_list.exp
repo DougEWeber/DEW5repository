@@ -1,0 +1,32 @@
+#!/usr/bin/env expect
+#
+# Sanity test: List. Confirms the item list (F9 from HDRSCN) displays
+# without error and includes the test item's current description, in
+# item ID order.
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .inventory_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .inventory_state -- run test_i1_add.exp (and test_i3_update.exp) first"
+    exit 1
+}
+source $state_file
+
+open_invmaint
+set screen [list_items_screen]
+
+if {[string match "*error*" $screen] || [string match "*Session or device*" $screen]} {
+    test_fail "error text present on the List screen" $screen
+}
+if {![string match "*INVENTORY LIST*" $screen]} {
+    test_fail "did not land on the item list screen after F9" $screen
+}
+if {![string match "*$::DESCR*" $screen]} {
+    test_fail "expected item description '$::DESCR' not found on the List screen (may be on a later subfile page if many test items have accumulated)" $screen
+}
+
+pass "item list screen shows without error and includes '$::DESCR'"

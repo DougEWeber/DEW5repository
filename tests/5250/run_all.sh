@@ -19,4 +19,9 @@ echo "########## Customer maintenance (CUSTMAINT) ##########"
 ./run_tests_customer.sh
 [ $? -eq 0 ] || overall=1
 
+echo
+echo "########## Inventory maintenance (INVMAINT) ##########"
+./run_tests_inventory.sh
+[ $? -eq 0 ] || overall=1
+
 exit $overall

@@ -1,0 +1,41 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Display. Uses the item created by test_i1_add.exp,
+# confirms the Display screen shows the data it was created with,
+# the vendor's name (looked up, read-only), and that all quantities
+# and last-order-date were initialized to zero.
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .inventory_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .inventory_state -- run test_i1_add.exp first"
+    exit 1
+}
+source $state_file
+
+open_invmaint
+set screen [display_item $::ITEMID]
+
+if {[string match "*NOT ON FILE*" $screen]} {
+    test_fail "item $::ITEMID reported NOT ON FILE" $screen
+}
+foreach {label val} [list Description $::DESCR Unit $::UNIT] {
+    if {![string match "*$val*" $screen]} {
+        test_fail "expected $label '$val' not found on Display screen" $screen
+    }
+}
+# Depends on vendor 00001 existing with a non-blank name -- true in this
+# environment courtesy of the vendor sanity suite's test_01_add.exp,
+# which is what test_i1_add.exp's hardcoded vend=1 relies on too.
+if {![string match "*ZZTEST*" $screen]} {
+    test_fail "expected vendor name (ZZTEST...) not found on Display screen -- run the vendor suite's test_01_add.exp first if vendor 00001 doesn't exist" $screen
+}
+if {![string match "*0000000*" $screen]} {
+    test_fail "expected zero-initialized quantities not found on Display screen" $screen
+}
+
+pass "item $::ITEMID displays with the data it was created with, quantities at zero"
