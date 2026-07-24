@@ -1,0 +1,32 @@
+---
+targets:
+  LIB1-ORDVIEW-PGM :
+    objlib: LIB1
+    objname: ORDVIEW
+    objtype: PGM
+    objattr: RPGLE
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QRPGLESRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: ORDVIEW
+    requisiteyamlrecords :
+      - LIBL-QRPGLESRC-SRCMBR-ORDVIEW
+    command: CRTBNDRPG
+    parameters:
+      - "PGM($(LIB1)/ORDVIEW)"
+      - "USRPRF(*USER)"
+      - "DFTACTGRP(*YES)"
+      - "SRCFILE(QRPGLESRC)"
+      - "SRCMBR(ORDVIEW)"
+      - "TGTCCSID(37)"
+      - "SRTSEQ(*HEX)"
+      - "LANGID(*JOBRUN)"
+  LIBL-QRPGLESRC-SRCMBR-ORDVIEW :
+    objlib: "*LIBL"
+    objname: QRPGLESRC
+    objtype: SRCMBR
+    mbrname: ORDVIEW

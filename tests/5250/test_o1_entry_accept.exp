@@ -1,0 +1,86 @@
+#!/usr/bin/env expect
+#
+# Sanity test: full order-entry happy path. Creates a fresh customer and
+# two fresh inventory items (with distinct current prices), runs ORDENTR
+# end to end (add both lines, confirm), and checks the order lands back
+# on the customer prompt with no error. Saves the assigned ORDERID plus
+# the customer/item data for the other order tests to reuse.
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] cusmnt_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+source [file join [file dirname [info script]] ordentr_helpers.exp]
+
+set cust  [expr {10000 + ([clock seconds] % 90000)}]
+set stamp [expr {[clock seconds] % 1000000}]
+set name  "ZZTEST $stamp"
+
+set itema "Y[format %04d [expr {[clock seconds] % 10000}]]"
+set itemb "Y[format %04d [expr {([clock seconds] + 1) % 10000}]]"
+
+open_custmaint
+set after [add_customer $cust $name "1 SANITY TEST WAY" "SUITE 100" "SPRINGFIELD" "IL" "62701"]
+if {[string match "*ALREADY ON FILE*" $after] || [string match "*error*" $after]} {
+    test_fail "error adding test customer" $after
+}
+
+open_invmaint
+set after [add_item_priced $itema "ZZTEST ORDER ITEM A" 1 "EACH" "1000"]
+if {[string match "*ALREADY ON FILE*" $after] || [string match "*NOT ON FILE*" $after]} {
+    test_fail "error adding test item A" $after
+}
+set after [add_item_priced $itemb "ZZTEST ORDER ITEM B" 1 "EACH" "2550"]
+if {[string match "*ALREADY ON FILE*" $after] || [string match "*NOT ON FILE*" $after]} {
+    test_fail "error adding test item B" $after
+}
+
+set screen [open_ordentr]
+if {![string match "*ORDER ENTRY*" $screen]} {
+    test_fail "did not reach ORDENTR's customer prompt" $screen
+}
+
+set screen [start_order $cust]
+if {[string match "*NOT ON FILE*" $screen]} {
+    test_fail "customer not accepted by ORDENTR" $screen
+}
+set orderid [grab_order_id $screen]
+
+set screen [add_line $itema 3]
+if {[string match "*NOT ON FILE*" $screen]} {
+    test_fail "item A not accepted" $screen
+}
+if {![string match "*$itema*" $screen]} {
+    test_fail "item A not shown in line list after adding" $screen
+}
+
+set screen [add_line $itemb 2]
+if {[string match "*NOT ON FILE*" $screen]} {
+    test_fail "item B not accepted" $screen
+}
+if {![string match "*$itemb*" $screen]} {
+    test_fail "item B not shown in line list after adding" $screen
+}
+
+set screen [finish_entry]
+if {![string match "*$itema*" $screen] || ![string match "*$itemb*" $screen]} {
+    test_fail "confirm screen did not show both lines" $screen
+}
+
+set screen [accept_order]
+if {![string match "*ORDER ENTRY*" $screen]} {
+    test_fail "did not return to customer prompt after accepting order" $screen
+}
+if {[string match "*error*" $screen]} {
+    test_fail "error text present after accepting order" $screen
+}
+
+set f [open [file join [file dirname [info script]] .order_state] w]
+puts $f "set ::OCUST    \"$cust\""
+puts $f "set ::OITEMA   \"$itema\""
+puts $f "set ::OITEMB   \"$itemb\""
+puts $f "set ::OORDERID \"$orderid\""
+close $f
+
+pass "created and accepted order $orderid for customer $cust (items $itema x3, $itemb x2)"

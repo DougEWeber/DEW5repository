@@ -1,0 +1,32 @@
+#!/usr/bin/env expect
+#
+# Sanity test: order viewing. Uses the order test_o1_entry_accept.exp
+# just created and accepted, opens ORDVIEW, and checks the header
+# (customer, state) and both lines display correctly.
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] ordentr_helpers.exp]
+source [file join [file dirname [info script]] .order_state]
+
+set screen [open_ordview]
+if {![string match "*ORDER VIEW*" $screen]} {
+    test_fail "did not reach ORDVIEW's order-id prompt" $screen
+}
+
+set screen [view_order $::OORDERID]
+if {[string match "*NOT ON FILE*" $screen]} {
+    test_fail "order $::OORDERID not found by ORDVIEW" $screen
+}
+if {![string match "*$::OCUST*" $screen]} {
+    test_fail "customer $::OCUST not shown on the viewed order" $screen
+}
+if {![string match "*IN PROCESS*" $screen]} {
+    test_fail "order state not shown as IN PROCESS after acceptance" $screen
+}
+if {![string match "*$::OITEMA*" $screen] || ![string match "*$::OITEMB*" $screen]} {
+    test_fail "both order lines not shown on the viewed order" $screen
+}
+
+pass "viewed order $::OORDERID: customer $::OCUST, state IN PROCESS, both lines present"

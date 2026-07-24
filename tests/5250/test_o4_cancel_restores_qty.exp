@@ -1,0 +1,114 @@
+#!/usr/bin/env expect
+#
+# Sanity test: cancelling an order undoes InvSell's effect for each
+# line, requires confirmation, and locks the order from any further
+# state change. Note: by the time an order reaches ORDSTAT it has
+# already been accepted (ORDSTAT only operates on orders that left the
+# entering state), which means AcceptOrder already called InvSell and
+# moved each line's quantity out of QPEND and into a QOH reduction --
+# so cancelling restores QOH, not QPEND (which is already back to its
+# pre-order baseline the moment acceptance completes).
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] cusmnt_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+source [file join [file dirname [info script]] ordentr_helpers.exp]
+
+# Queries QOH straight from the database via SQL over SSH, rather than
+# scraping it off the screen -- INVINQ shows QOH with no edit code, so a
+# negative value (this test's fresh zero-stock item goes negative once
+# sold, since INVSELL only checks QPEND sufficiency, not QOH) renders as
+# EBCDIC zoned-decimal overpunch (e.g. "000000M" for -4), which a plain
+# \d+ regex can't parse correctly.
+#
+# Uses the "makedev" SSH alias (see .claude/ibmi-config.sh) -- a
+# different path to the same system than the telnet host/port in
+# 5250-config.exp, which isn't reachable over plain SSH.
+proc grab_qoh_sql {itemid} {
+    # SQL is piped over stdin rather than embedded in the ssh/qsh/db2
+    # command line -- nesting shell-level and SQL-level single-quote
+    # escaping through three layers (ssh's remote command, qsh -c, db2's
+    # own argument) reliably mangles the literal; stdin sidesteps all of
+    # it.
+    set sql "SELECT QOH FROM $::LIB.INVMST WHERE ITEMID = '$itemid';"
+    set out [exec ssh makedev "qsh -c \"db2 -i\"" << $sql]
+    # The column is right-justified with a separately-positioned minus
+    # sign (e.g. "-      4"), not a sign glued to the digits -- strip
+    # internal whitespace between them before converting to a number.
+    if {![regexp {(?m)^\s*(-?)\s*(\d+)\s*$} $out -> sign digits]} {
+        fail_hard "could not parse QOH from SQL output for $itemid:\n$out"
+    }
+    return [expr {$sign eq "-" ? -$digits : $digits}]
+}
+
+set cust  [expr {10000 + ([clock seconds] % 90000)}]
+set stamp [expr {[clock seconds] % 1000000}]
+set name  "ZZTEST $stamp"
+set item  "X[format %04d [expr {[clock seconds] % 10000}]]"
+
+open_custmaint
+set after [add_customer $cust $name "1 SANITY TEST WAY" "SUITE 100" "SPRINGFIELD" "IL" "62701"]
+if {[string match "*ALREADY ON FILE*" $after] || [string match "*error*" $after]} {
+    test_fail "error adding test customer" $after
+}
+
+open_invmaint
+set after [add_item_priced $item "ZZTEST CANCEL ITEM" 1 "EACH" "500"]
+if {[string match "*ALREADY ON FILE*" $after] || [string match "*NOT ON FILE*" $after]} {
+    test_fail "error adding test item" $after
+}
+close_session
+set qoh_before [grab_qoh_sql $item]
+
+open_ordentr
+set screen [start_order $cust]
+set orderid [grab_order_id $screen]
+set screen [add_line $item 4]
+if {![string match "*$item*" $screen]} {
+    test_fail "item not shown in line list after adding" $screen
+}
+set screen [finish_entry]
+set screen [accept_order]
+if {![string match "*ORDER ENTRY*" $screen]} {
+    test_fail "did not return to customer prompt after accepting order" $screen
+}
+close_session
+
+set qoh_after_accept [grab_qoh_sql $item]
+if {$qoh_after_accept != $qoh_before - 4} {
+    test_fail "QOH after accepting the order is $qoh_after_accept, expected [expr {$qoh_before - 4}] (InvSell should reduce QOH by the sold quantity)" ""
+}
+
+open_ordstat
+set screen [open_order_status $orderid]
+if {![string match "*IN PROCESS*" $screen]} {
+    test_fail "order not shown as IN PROCESS before cancelling" $screen
+}
+
+set screen [change_state "X"]
+if {![string match "*Cancel*" $screen] && ![string match "*CONFIRM*" $screen] && ![string match "*confirm*" $screen]} {
+    test_fail "did not reach the cancel confirmation screen" $screen
+}
+
+set screen [confirm_cancel]
+if {![string match "*ORDER STATE*" $screen]} {
+    test_fail "did not return to the order-id prompt after confirming cancel" $screen
+}
+
+set screen [open_order_status $orderid]
+if {![string match "*CANCELLED*" $screen]} {
+    test_fail "order did not show CANCELLED after confirming the cancel" $screen
+}
+if {![string match "*NO FURTHER CHANGES*" $screen] && ![string match "*NO CHANGES ALLOWED*" $screen]} {
+    test_fail "cancelled-order lock message not shown" $screen
+}
+close_session
+
+set qoh_after_cancel [grab_qoh_sql $item]
+if {$qoh_after_cancel != $qoh_before} {
+    test_fail "QOH after cancelling is $qoh_after_cancel, expected it back to $qoh_before" ""
+}
+
+pass "order $orderid: accepted (QOH $qoh_before -> $qoh_after_accept), cancelled (QOH -> $qoh_after_cancel), now locked"

@@ -1,0 +1,34 @@
+---
+targets:
+  LIB1-ORDHDRL1-FILE :
+    objlib: LIB1
+    objname: ORDHDRL1
+    objtype: FILE
+    objattr: LF
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QDDSSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: ORDHDRL1
+      -
+        name: ORDHDR
+        lib: "*LIBL"
+        objtype: "FILE"
+    requisiteyamlrecords :
+      - LIBL-QDDSSRC-SRCMBR-ORDHDRL1
+      - LIB1-ORDHDR-FILE
+    command: EDOCRTOBJ
+    parameters:
+      - "BLDTGT($(LIB1)/ORDHDRL1)"
+      - "OBJTYPE(*FILE)"
+      - "OBJATTR(LF)"
+      - "CMD(CRTLF)"
+      - "CMDPARMS(' FILE($(LIB1)/ORDHDRL1) SRCFILE(QDDSSRC) SRCMBR(ORDHDRL1) TEXT(''Order Header L1'')')"
+  LIBL-QDDSSRC-SRCMBR-ORDHDRL1 :
+    objlib: "*LIBL"
+    objname: QDDSSRC
+    objtype: SRCMBR
+    mbrname: ORDHDRL1

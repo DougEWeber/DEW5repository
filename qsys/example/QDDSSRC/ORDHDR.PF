@@ -1,0 +1,15 @@
+     A******************************************************************
+     A* FILE NAME:  ORDHDR                                            *
+     A* RELATED PGMS:  ORDVIEW, ORDENTR, ORDSTAT                       *
+     A* RELATED FILES:  ORDHDRL1 (LOGICAL FILE)                        *
+     A* DESCRIPTION:  THIS IS THE PHYSICAL FILE ORDHDR. IT HAS        *
+     A*          ONE RECORD FORMAT CALLED ORDHREC.                    *
+     A******************************************************************
+     A* ORDER HEADER FILE -- ORDHDR
+     A* STATE VALUES: E=ENTERING P=IN PROCESS S=SHIPPED               *
+     A*               C=COMPLETED X=CANCELLED D=IN DISPUTE            *
+     A          R ORDHREC
+     A            ORDERID        7  0       TEXT('ORDER ID')
+     A            CUST           5  0       TEXT('CUSTOMER NUMBER')
+     A            ORDDATE        8  0       TEXT('ORDER DATE YYYYMMDD')
+     A            ORDSTATE       1          TEXT('ORDER STATE - SEE ABOVE')

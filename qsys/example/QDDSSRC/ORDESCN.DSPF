@@ -1,0 +1,91 @@
+     A******************************************************************
+     A*     FILE NAME:  ORDESCN                                       *
+     A*  RELATED PGMS:  ORDENTR                                       *
+     A* RELATED FILES:  ORDDTLL2, INVMSTL1  (LOGICAL FILES)           *
+     A*   DESCRIPTION:  THIS IS THE DISPLAY FILE ORDESCN. IT HAS 4    *
+     A*                 RECORD FORMATS.                              *
+     A******************************************************************
+     A                                      REF(ORDDTLL2)
+     A                                      CHGINPDFT(CS)
+     A                                      PRINT(QSYSPRT)
+     A                                      INDARA
+     A          R HDRSCN
+     A                                      TEXT('PROMPT FOR CUSTOMER ID')
+     A                                      CA03(03 'END')
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 27'ORDER ENTRY'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A            CUST      R     Y  I 10 27REFFLD(CUST ORDHDRL1) DSPATR(CS)
+     A  52                                  ERRMSG('CUSTOMER NOT ON FILE' 52)
+     A                                 10 35'<--Enter Customer ID'
+     A                                      DSPATR(HI)
+     A                                 23  4'F3 End Job'
+     A          R LINESFL                   SFL
+     A            SEL            1A  I  9  3DSPATR(CS)
+     A            ITEMID    R        O  9  6DSPATR(CS)
+     A            ITEMDESC      25A  O  9 12
+     A            QTY       R        O  9 38EDTCDE(Z)
+     A            PRICE     R        O  9 46EDTCDE(1)
+     A          R LINECTL                   SFLCTL(LINESFL)
+     A                                      TEXT('ORDER LINE LIST - CONTROL')
+     A                                      CA12(12 'CANCEL ORDER')
+     A  43                                  SFLDSP
+     A  42                                  SFLDSPCTL
+     A  41                                  SFLCLR
+     A                                      SFLSIZ(0200)
+     A                                      SFLPAG(0010)
+     A  43                                  SFLEND(*MORE)
+     A                                      CA03(03 'CANCEL ORDER')
+     A                                      CF05(05 'DONE')
+     A                                      CF06(06 'ADD LINE')
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 27'ORDER ENTRY'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A                                  4  3'Order:' DSPATR(HI UL)
+     A            ORDERID   R     Y  O  4 27EDTCDE(Z)
+     A                                  5  1'Customer:' DSPATR(HI UL)
+     A            CUST      R     Y  O  5 27REFFLD(CUST ORDHDRL1) EDTCDE(Z)
+     A  72                              7  2'F5 Done  F6 Add  F3 Cancel'
+     A  73                              7  2'ENTER Confirm    F12 Cancel'
+     A                                  8  3'Sel'
+     A                                      DSPATR(HI UL)
+     A                                  8  6'Item'
+     A                                      DSPATR(HI UL)
+     A                                  8 12'Description'
+     A                                      DSPATR(HI UL)
+     A                                  8 38'Qty'
+     A                                      DSPATR(HI UL)
+     A                                  8 46'Price'
+     A                                      DSPATR(HI UL)
+     A          R LINEADD                   TEXT('ADD ORDER LINE')
+     A                                      CA12(12 'CANCEL LINE')
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 25'ADD ORDER LINE'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A                                  4  3'Order:' DSPATR(HI UL)
+     A            ORDERID   R     Y  O  4 27EDTCDE(Z)
+     A                                  6 19'Item' DSPATR(HI)
+     A            ITEMID    R        B  6 27DSPATR(CS)
+     A  51                                  ERRMSG('ITEM NOT ON FILE' 51)
+     A  74                                  DSPATR(PR)
+     A                                  7  6'Description' DSPATR(HI)
+     A            ITEMDESC      25A  O  7 27
+     A                                  9 20'Qty' DSPATR(HI)
+     A            QTY       R        B  9 27DSPATR(CS)
+     A  75                                  DSPATR(PR)
+     A                                 10 18'Price' DSPATR(HI)
+     A            PRICE     R        B 10 27DSPATR(CS)
+     A  75                                  DSPATR(PR)
+     A                                 23  2'F12 Cancel Line'

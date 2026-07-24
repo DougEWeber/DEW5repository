@@ -1,0 +1,18 @@
+     A******************************************************************
+     A*     FILE NAME:  ORDDTLL2                                      *
+     A*  RELATED PGMS:  ORDVIEW, ORDENTR, ORDSTAT                     *
+     A* RELATED FILES:  ORDDTL  (PHYSICAL FILE)                       *
+     A*   DESCRIPTION:  THIS IS LOGICAL FILE ORDDTLL2.                *
+     A*                 IT CONTAINS ONE RECORD FORMAT CALLED ODLREC2.*
+     A*                 LOGICAL VIEW OF ORDER DETAIL FILE (ORDDTL)   *
+     A*                 BY ORDER ID (ORDERID) THEN LINE ID (LINEID) *
+     A*                 -- USED TO LIST ALL LINES OF ONE ORDER      *
+     A******************************************************************
+     A          R ODLREC2                   PFILE(ORDDTL)
+     A            ORDERID
+     A            LINEID
+     A            ITEMID
+     A            QTY
+     A            PRICE
+     A          K ORDERID
+     A          K LINEID

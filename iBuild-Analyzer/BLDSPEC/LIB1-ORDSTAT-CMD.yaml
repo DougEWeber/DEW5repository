@@ -1,0 +1,32 @@
+---
+targets:
+  LIB1-ORDSTAT-CMD :
+    objlib: LIB1
+    objname: ORDSTAT
+    objtype: CMD
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QCMDSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: ORDSTAT
+    requisiteyamlrecords :
+      - LIBL-QCMDSRC-SRCMBR-ORDSTAT
+    command: CRTCMD
+    parameters:
+      - "CMD($(LIB1)/ORDSTAT)"
+      - "PGM(ORDSTAT)"
+      - "SRCFILE(QCMDSRC)"
+      - "SRCMBR(ORDSTAT)"
+      - "THDSAFE(*NO)"
+      - "MLTTHDACN(*SYSVAL)"
+      - "TEXT('Order State')"
+      - "CURLIB(*NOCHG)"
+      - "PRDLIB(*NOCHG)"
+  LIBL-QCMDSRC-SRCMBR-ORDSTAT :
+    objlib: "*LIBL"
+    objname: QCMDSRC
+    objtype: SRCMBR
+    mbrname: ORDSTAT

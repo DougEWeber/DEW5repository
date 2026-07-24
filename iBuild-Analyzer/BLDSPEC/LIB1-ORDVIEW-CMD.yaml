@@ -1,0 +1,32 @@
+---
+targets:
+  LIB1-ORDVIEW-CMD :
+    objlib: LIB1
+    objname: ORDVIEW
+    objtype: CMD
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QCMDSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: ORDVIEW
+    requisiteyamlrecords :
+      - LIBL-QCMDSRC-SRCMBR-ORDVIEW
+    command: CRTCMD
+    parameters:
+      - "CMD($(LIB1)/ORDVIEW)"
+      - "PGM(ORDVIEW)"
+      - "SRCFILE(QCMDSRC)"
+      - "SRCMBR(ORDVIEW)"
+      - "THDSAFE(*NO)"
+      - "MLTTHDACN(*SYSVAL)"
+      - "TEXT('Order View')"
+      - "CURLIB(*NOCHG)"
+      - "PRDLIB(*NOCHG)"
+  LIBL-QCMDSRC-SRCMBR-ORDVIEW :
+    objlib: "*LIBL"
+    objname: QCMDSRC
+    objtype: SRCMBR
+    mbrname: ORDVIEW

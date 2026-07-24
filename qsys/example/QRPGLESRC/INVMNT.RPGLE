@@ -100,6 +100,7 @@
           qoo = 0;
           qpend = 0;
           lorddt = 0;
+          curprice = 0;
 
           // Prompt for the new item's data, re-prompting if the vendor
           // entered doesn't exist

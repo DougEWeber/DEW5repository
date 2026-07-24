@@ -1,0 +1,32 @@
+---
+targets:
+  LIB1-ORDENTR-CMD :
+    objlib: LIB1
+    objname: ORDENTR
+    objtype: CMD
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QCMDSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: ORDENTR
+    requisiteyamlrecords :
+      - LIBL-QCMDSRC-SRCMBR-ORDENTR
+    command: CRTCMD
+    parameters:
+      - "CMD($(LIB1)/ORDENTR)"
+      - "PGM(ORDENTR)"
+      - "SRCFILE(QCMDSRC)"
+      - "SRCMBR(ORDENTR)"
+      - "THDSAFE(*NO)"
+      - "MLTTHDACN(*SYSVAL)"
+      - "TEXT('Order Entry')"
+      - "CURLIB(*NOCHG)"
+      - "PRDLIB(*NOCHG)"
+  LIBL-QCMDSRC-SRCMBR-ORDENTR :
+    objlib: "*LIBL"
+    objname: QCMDSRC
+    objtype: SRCMBR
+    mbrname: ORDENTR

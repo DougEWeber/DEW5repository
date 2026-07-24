@@ -1,0 +1,32 @@
+---
+targets:
+  LIB1-ORDSTAT-PGM :
+    objlib: LIB1
+    objname: ORDSTAT
+    objtype: PGM
+    objattr: RPGLE
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QRPGLESRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: ORDSTAT
+    requisiteyamlrecords :
+      - LIBL-QRPGLESRC-SRCMBR-ORDSTAT
+    command: CRTBNDRPG
+    parameters:
+      - "PGM($(LIB1)/ORDSTAT)"
+      - "USRPRF(*USER)"
+      - "DFTACTGRP(*YES)"
+      - "SRCFILE(QRPGLESRC)"
+      - "SRCMBR(ORDSTAT)"
+      - "TGTCCSID(37)"
+      - "SRTSEQ(*HEX)"
+      - "LANGID(*JOBRUN)"
+  LIBL-QRPGLESRC-SRCMBR-ORDSTAT :
+    objlib: "*LIBL"
+    objname: QRPGLESRC
+    objtype: SRCMBR
+    mbrname: ORDSTAT

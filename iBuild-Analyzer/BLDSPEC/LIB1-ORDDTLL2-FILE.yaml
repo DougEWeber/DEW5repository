@@ -1,0 +1,34 @@
+---
+targets:
+  LIB1-ORDDTLL2-FILE :
+    objlib: LIB1
+    objname: ORDDTLL2
+    objtype: FILE
+    objattr: LF
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QDDSSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: ORDDTLL2
+      -
+        name: ORDDTL
+        lib: "*LIBL"
+        objtype: "FILE"
+    requisiteyamlrecords :
+      - LIBL-QDDSSRC-SRCMBR-ORDDTLL2
+      - LIB1-ORDDTL-FILE
+    command: EDOCRTOBJ
+    parameters:
+      - "BLDTGT($(LIB1)/ORDDTLL2)"
+      - "OBJTYPE(*FILE)"
+      - "OBJATTR(LF)"
+      - "CMD(CRTLF)"
+      - "CMDPARMS(' FILE($(LIB1)/ORDDTLL2) SRCFILE(QDDSSRC) SRCMBR(ORDDTLL2) TEXT(''Order Detail L2'')')"
+  LIBL-QDDSSRC-SRCMBR-ORDDTLL2 :
+    objlib: "*LIBL"
+    objname: QDDSSRC
+    objtype: SRCMBR
+    mbrname: ORDDTLL2
