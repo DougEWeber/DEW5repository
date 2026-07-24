@@ -56,6 +56,8 @@
      A  53                                  ERRMSG('VENDOR NOT ON FILE' 53)
      A                                  9 20'Unit' DSPATR(HI)
      A            UNIT      R        I  9 27
+     A                                 10  6'Current Price' DSPATR(HI)
+     A            CURPRICE  R        I 10 27
      A                                 23  2'F12 Cancel Addition'
      A          R INVINQ                    TEXT('DISPLAY/UPDATE INV ITEM')
      A                                      CA12(12 'PREVIOUS SCREEN')
@@ -83,14 +85,17 @@
      A                                  9 20'Unit' DSPATR(HI)
      A            UNIT      R        B  9 27DSPATR(CS)
      A  04                                  DSPATR(PR)
-     A                                 10  6'Qty On Hand' DSPATR(HI)
-     A            QOH       R        O 10 27
-     A                                 11  5'Qty On Order' DSPATR(HI)
-     A            QOO       R        O 11 27
-     A                                 12  8'Qty Pending' DSPATR(HI)
-     A            QPEND     R        O 12 27
-     A                                 13  1'Last Order Date' DSPATR(HI)
-     A            LORDDT    R        O 13 27
+     A                                 10  6'Current Price' DSPATR(HI)
+     A            CURPRICE  R        B 10 27DSPATR(CS)
+     A  04                                  DSPATR(PR)
+     A                                 11  6'Qty On Hand' DSPATR(HI)
+     A            QOH       R        O 11 27
+     A                                 12  5'Qty On Order' DSPATR(HI)
+     A            QOO       R        O 12 27
+     A                                 13  8'Qty Pending' DSPATR(HI)
+     A            QPEND     R        O 13 27
+     A                                 14  1'Last Order Date' DSPATR(HI)
+     A            LORDDT    R        O 14 27
      A                                 23  2'F12 Cancel'
      A          R INVLSFL                   SFL
      A            ITEMID    R        O  6  3DSPATR(CS)

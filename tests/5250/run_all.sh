@@ -24,4 +24,9 @@ echo "########## Inventory maintenance (INVMAINT) ##########"
 ./run_tests_inventory.sh
 [ $? -eq 0 ] || overall=1
 
+echo
+echo "########## Order entry (ORDENTR/ORDVIEW/ORDSTAT) ##########"
+./run_tests_order.sh
+[ $? -eq 0 ] || overall=1
+
 exit $overall

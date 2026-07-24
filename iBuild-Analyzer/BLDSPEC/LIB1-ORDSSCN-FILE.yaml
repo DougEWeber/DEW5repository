@@ -1,0 +1,39 @@
+---
+targets:
+  LIB1-ORDSSCN-FILE :
+    objlib: LIB1
+    objname: ORDSSCN
+    objtype: FILE
+    objattr: DSPF
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QDDSSRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: ORDSSCN
+      -
+        name: ORDDTLL2
+        lib: "*LIBL"
+        objtype: "FILE"
+      -
+        name: ORDHDRL1
+        lib: "*LIBL"
+        objtype: "FILE"
+    requisiteyamlrecords :
+      - LIBL-QDDSSRC-SRCMBR-ORDSSCN
+      - LIB1-ORDDTLL2-FILE
+      - LIB1-ORDHDRL1-FILE
+    command: EDOCRTOBJ
+    parameters:
+      - "BLDTGT($(LIB1)/ORDSSCN)"
+      - "OBJTYPE(*FILE)"
+      - "OBJATTR(DSPF)"
+      - "CMD(CRTDSPF)"
+      - "CMDPARMS(' FILE($(LIB1)/ORDSSCN) SRCFILE(QDDSSRC) SRCMBR(ORDSSCN) DFRWRT(*YES) RSTDSP(*NO) TEXT(''Order State'')')"
+  LIBL-QDDSSRC-SRCMBR-ORDSSCN :
+    objlib: "*LIBL"
+    objname: QDDSSRC
+    objtype: SRCMBR
+    mbrname: ORDSSCN

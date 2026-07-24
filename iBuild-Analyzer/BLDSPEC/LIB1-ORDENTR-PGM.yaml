@@ -1,0 +1,32 @@
+---
+targets:
+  LIB1-ORDENTR-PGM :
+    objlib: LIB1
+    objname: ORDENTR
+    objtype: PGM
+    objattr: RPGLE
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QRPGLESRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: ORDENTR
+    requisiteyamlrecords :
+      - LIBL-QRPGLESRC-SRCMBR-ORDENTR
+    command: CRTBNDRPG
+    parameters:
+      - "PGM($(LIB1)/ORDENTR)"
+      - "USRPRF(*USER)"
+      - "DFTACTGRP(*YES)"
+      - "SRCFILE(QRPGLESRC)"
+      - "SRCMBR(ORDENTR)"
+      - "TGTCCSID(37)"
+      - "SRTSEQ(*HEX)"
+      - "LANGID(*JOBRUN)"
+  LIBL-QRPGLESRC-SRCMBR-ORDENTR :
+    objlib: "*LIBL"
+    objname: QRPGLESRC
+    objtype: SRCMBR
+    mbrname: ORDENTR

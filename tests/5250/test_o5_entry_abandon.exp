@@ -1,0 +1,82 @@
+#!/usr/bin/env expect
+#
+# Sanity test: abandoning an order mid-entry (pressing F12/F3 before the
+# final confirmation, or declining that confirmation) fully rolls the
+# order back -- the header and its line(s) are deleted, and each line's
+# reserved quantity is released back out of QPEND. Checks both the
+# "decline at final confirmation" path and that the order is gone
+# afterward (ORDVIEW reports it not on file).
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] cusmnt_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+source [file join [file dirname [info script]] ordentr_helpers.exp]
+
+# Same stdin-piped SQL technique as test_o4 -- see its header comment
+# for why this avoids the ssh/qsh/db2 nested-quoting problem.
+proc grab_qpend_sql {itemid} {
+    set sql "SELECT QPEND FROM $::LIB.INVMST WHERE ITEMID = '$itemid';"
+    set out [exec ssh makedev "qsh -c \"db2 -i\"" << $sql]
+    if {![regexp {(?m)^\s*(-?)\s*(\d+)\s*$} $out -> sign digits]} {
+        fail_hard "could not parse QPEND from SQL output for $itemid:\n$out"
+    }
+    return [expr {$sign eq "-" ? -$digits : $digits}]
+}
+
+set cust  [expr {10000 + ([clock seconds] % 90000)}]
+set stamp [expr {[clock seconds] % 1000000}]
+set name  "ZZTEST $stamp"
+set item  "W[format %04d [expr {[clock seconds] % 10000}]]"
+
+open_custmaint
+set after [add_customer $cust $name "1 SANITY TEST WAY" "SUITE 100" "SPRINGFIELD" "IL" "62701"]
+if {[string match "*ALREADY ON FILE*" $after] || [string match "*error*" $after]} {
+    test_fail "error adding test customer" $after
+}
+
+open_invmaint
+set after [add_item_priced $item "ZZTEST ABANDON ITEM" 1 "EACH" "750"]
+if {[string match "*ALREADY ON FILE*" $after] || [string match "*NOT ON FILE*" $after]} {
+    test_fail "error adding test item" $after
+}
+close_session
+set qpend_before [grab_qpend_sql $item]
+
+open_ordentr
+set screen [start_order $cust]
+set orderid [grab_order_id $screen]
+set screen [add_line $item 6]
+if {![string match "*$item*" $screen]} {
+    test_fail "item not shown in line list after adding" $screen
+}
+
+set qpend_mid_entry [grab_qpend_sql $item]
+if {$qpend_mid_entry != $qpend_before + 6} {
+    test_fail "QPEND while still entering is $qpend_mid_entry, expected [expr {$qpend_before + 6}] (the line should reserve its quantity)" ""
+}
+
+set screen [finish_entry]
+if {![string match "*$item*" $screen] || ![string match "*Cancel*" $screen]} {
+    test_fail "did not reach the whole-order confirmation screen" $screen
+}
+
+set screen [cancel_order_entry]
+if {![string match "*ORDER ENTRY*" $screen]} {
+    test_fail "did not return to the customer prompt after declining confirmation" $screen
+}
+close_session
+
+set qpend_after_abandon [grab_qpend_sql $item]
+if {$qpend_after_abandon != $qpend_before} {
+    test_fail "QPEND after abandoning is $qpend_after_abandon, expected it back to $qpend_before (rollback should release the reservation)" ""
+}
+
+set screen [open_ordview]
+set screen [view_order $orderid]
+if {![string match "*NOT ON FILE*" $screen]} {
+    test_fail "abandoned order $orderid still shows on ORDVIEW (rollback should have deleted it)" $screen
+}
+
+pass "order $orderid abandoned at final confirmation: fully rolled back (QPEND $qpend_before -> $qpend_mid_entry -> $qpend_after_abandon), order deleted"

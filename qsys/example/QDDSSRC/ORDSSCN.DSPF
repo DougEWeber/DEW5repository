@@ -1,0 +1,72 @@
+     A******************************************************************
+     A*     FILE NAME:  ORDSSCN                                       *
+     A*  RELATED PGMS:  ORDSTAT                                       *
+     A* RELATED FILES:  ORDHDRL1, ORDDTLL2  (LOGICAL FILES)           *
+     A*   DESCRIPTION:  THIS IS THE DISPLAY FILE ORDSSCN. IT HAS 3    *
+     A*                 RECORD FORMATS.                              *
+     A******************************************************************
+     A                                      REF(ORDDTLL2)
+     A                                      CHGINPDFT(CS)
+     A                                      PRINT(QSYSPRT)
+     A                                      INDARA
+     A          R HDRSCN
+     A                                      TEXT('PROMPT FOR ORDER ID')
+     A                                      CA03(03 'END')
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 28'ORDER STATE'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A            ORDERID   R     Y  I 10 27DSPATR(CS)
+     A  52                                  ERRMSG('ORDER NOT ON FILE' 52)
+     A  53                                  ERRMSG('ORDER NOT YET ACCEPTED' 53)
+     A                                 10 35'<--Enter Order ID'
+     A                                      DSPATR(HI)
+     A                                 23  4'F3 End Job'
+     A          R STATSFL                   SFL
+     A            ITEMID    R        O 12  3DSPATR(CS)
+     A            ITEMDESC      25A  O 12 10
+     A            QTY       R        O 12 36EDTCDE(Z)
+     A            PRICE     R        O 12 44EDTCDE(1)
+     A          R STATCTL                   SFLCTL(STATSFL)
+     A                                      TEXT('ORDER STATE - CONTROL')
+     A                                      CA12(12 'PREVIOUS SCREEN')
+     A  43                                  SFLDSP
+     A  42                                  SFLDSPCTL
+     A  41                                  SFLCLR
+     A                                      SFLSIZ(0200)
+     A                                      SFLPAG(0012)
+     A  43                                  SFLEND(*MORE)
+     A                                  2  4TIME
+     A                                      DSPATR(HI)
+     A                                  2 28'ORDER STATE'
+     A                                      DSPATR(HI RI)
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                      DSPATR(HI)
+     A                                  4  3'Order:' DSPATR(HI UL)
+     A            ORDERID   R     Y  O  4 27EDTCDE(Z)
+     A                                  5  1'Customer:' DSPATR(HI UL)
+     A            CUST      R     Y  O  5 27REFFLD(CUST ORDHDRL1) EDTCDE(Z)
+     A                                  6  3'Order Date:' DSPATR(HI UL)
+     A            ORDDATE   R        O  6 27REFFLD(ORDDATE ORDHDRL1)
+     A                                  7  8'State:' DSPATR(HI UL)
+     A            STATEDS       12A  O  7 27
+     A                                  8  3'New State:' DSPATR(HI UL)
+     A            NEWSTATE       1A  B  8 27DSPATR(CS)
+     A  54                                  ERRMSG('INVALID STATE CODE' 54)
+     A  56                                  DSPATR(PR)
+     A  72                              9  3'New state: E,P,S,C,X,D'
+     A  73                              9  3'Cancel-return qty? Enter/F12=No'
+     A  55                              9  3'CANCELLED - NO CHANGES ALLOWED'
+     A                                 10  2'F12 Return   Roll Up/Down to page'
+     A                                 11  3'Item'
+     A                                      DSPATR(HI UL)
+     A                                 11 10'Description'
+     A                                      DSPATR(HI UL)
+     A                                 11 36'Qty'
+     A                                      DSPATR(HI UL)
+     A                                 11 44'Price'
+     A                                      DSPATR(HI UL)

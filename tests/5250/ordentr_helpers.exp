@@ -1,0 +1,175 @@
+#!/usr/bin/env expect
+#
+# App-specific helpers for driving the order-entry feature's three
+# programs (ORDENTR, ORDVIEW, ORDSTAT), built on top of lib.exp's
+# generic primitives and invmnt_helpers.exp's pad50/zpad5/pad10. Source
+# this after config.exp, lib.exp, report_helpers.exp, and
+# invmnt_helpers.exp.
+#
+# Notable differences from the vendor/customer/inventory programs this
+# suite's helpers were modeled on:
+#  - ORDER ID is system-generated (like VEND, unlike CUST/ITEMID) and is
+#    only ever shown embedded in a screen (the "Order:" line on
+#    ORDENTR's/ORDVIEW's/ORDSTAT's control screens) -- callers scrape it
+#    with grab_order_id.
+#  - ORDENTR reuses ONE screen pair (LINESFL/LINECTL) for two different
+#    phases (line entry, then whole-order confirmation) -- add_line and
+#    accept_order both press Enter/F-keys against that same pair, just
+#    at different points in the flow.
+#  - ORDSTAT's NEWSTATE field is a single character with no visible
+#    default, so no stale-tail padding is needed -- type the one letter
+#    and press Enter.
+
+# Signs on, ADDLIBLEs $::LIB, launches ORDENTR. Returns the settled
+# HDRSCN (customer prompt) screen text.
+proc open_ordentr {} {
+    global spawn_id timeout
+    connect_and_signon
+    add_library $::LIB
+    send -- "ORDENTR\r"
+    return [drain_screen]
+}
+
+proc open_ordview {} {
+    global spawn_id timeout
+    connect_and_signon
+    add_library $::LIB
+    send -- "ORDVIEW\r"
+    return [drain_screen]
+}
+
+proc open_ordstat {} {
+    global spawn_id timeout
+    connect_and_signon
+    add_library $::LIB
+    send -- "ORDSTAT\r"
+    return [drain_screen]
+}
+
+# Adds an inventory item exactly like invmnt_helpers.exp's add_item, but
+# also fills CURPRICE (the last field on INVBLD, added for the
+# order-entry feature) -- not exact-width padded since it's a fresh Add
+# (field starts blank, no stale tail to worry about) and nothing follows
+# it on the screen for a stray auto-advance to corrupt.
+proc add_item_priced {itemid descr vend unit curprice} {
+    global spawn_id timeout
+    send -- "$itemid"
+    press F5
+    drain_screen
+    send -- "[pad50 $descr][zpad5 $vend][pad10 $unit]$curprice\r"
+    return [drain_screen]
+}
+
+# From ORDENTR's HDRSCN: key a customer number, press Enter. Returns the
+# settled LINECTL screen text (empty subfile, entry phase) if the
+# customer was found.
+proc start_order {cust} {
+    global spawn_id timeout
+    send -- "$cust"
+    enter
+    return [drain_screen]
+}
+
+# Scrapes the system-assigned ORDERID off a screen that shows the
+# "Order:" line (LINECTL/STATCTL/VIEWCTL all do). Takes the LAST match
+# in the buffer, not the first, per the skill's guidance on scraping
+# echoed-back values.
+proc grab_order_id {screen} {
+    set matches [regexp -all -inline {Order:\s*(\d+)} $screen]
+    if {[llength $matches] == 0} {
+        fail_hard "could not find an Order: number on screen:\n$screen"
+    }
+    return [lindex $matches end]
+}
+
+# From LINECTL (entry phase): press F6 (Add Line), key the item ID,
+# press Enter to validate it, then key the quantity and press Enter to
+# commit the line (price is left as the item's default -- untouched
+# fields are transmitted as-is, so the pre-filled default price submits
+# unchanged). Returns the settled LINECTL screen text shown afterward.
+proc add_line {itemid qty} {
+    global spawn_id timeout
+    press F6
+    drain_screen
+    send -- "$itemid"
+    enter
+    drain_screen
+    send -- "$qty"
+    enter
+    sleep 1.5
+    return [drain_screen]
+}
+
+# From LINECTL (entry phase): press F5 (Done). Returns the settled
+# LINECTL screen text shown afterward (confirm phase -- whole order
+# redisplayed with an ENTER-Confirm/F12-Cancel hint).
+proc finish_entry {} {
+    global spawn_id timeout
+    press F5
+    return [drain_screen]
+}
+
+# From LINECTL (confirm phase): press bare Enter to accept the order.
+# Returns the settled HDRSCN (customer prompt) screen text shown
+# afterward.
+proc accept_order {} {
+    global spawn_id timeout
+    enter
+    return [drain_screen]
+}
+
+# From LINECTL (entry or confirm phase): press F12 to cancel/decline,
+# rolling the whole order back. Returns the settled HDRSCN (customer
+# prompt) screen text shown afterward.
+proc cancel_order_entry {} {
+    global spawn_id timeout
+    press F12
+    return [drain_screen]
+}
+
+# From ORDVIEW's HDRSCN: key an order ID, press Enter. Returns the
+# settled VIEWCTL screen text.
+proc view_order {orderid} {
+    global spawn_id timeout
+    send -- "$orderid"
+    enter
+    return [drain_screen]
+}
+
+# From ORDSTAT's HDRSCN: key an order ID, press Enter. Returns the
+# settled STATCTL screen text.
+proc open_order_status {orderid} {
+    global spawn_id timeout
+    send -- "$orderid"
+    enter
+    return [drain_screen]
+}
+
+# From STATCTL: key a one-character new state code, press Enter. For
+# non-cancel codes this applies immediately and returns to HDRSCN; for
+# 'X' this instead lands on the cancel confirmation (same screen,
+# NEWSTATE now protected) -- confirm_cancel completes that path.
+proc change_state {code} {
+    global spawn_id timeout
+    send -- "$code"
+    enter
+    return [drain_screen]
+}
+
+# From STATCTL's cancel confirmation (after change_state "X"): press
+# bare Enter to confirm the cancellation. Returns the settled HDRSCN
+# screen text shown afterward.
+proc confirm_cancel {} {
+    global spawn_id timeout
+    enter
+    return [drain_screen]
+}
+
+# From STATCTL's cancel confirmation: press F12 to back out instead of
+# confirming. Returns the settled STATCTL screen text shown afterward
+# (back in normal phase, same order still displayed).
+proc decline_cancel {} {
+    global spawn_id timeout
+    press F12
+    return [drain_screen]
+}

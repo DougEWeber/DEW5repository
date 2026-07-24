@@ -1,0 +1,17 @@
+     A******************************************************************
+     A*     FILE NAME:  ORDDTLL1                                      *
+     A*  RELATED PGMS:  ORDENTR                                       *
+     A* RELATED FILES:  ORDDTL  (PHYSICAL FILE)                       *
+     A*   DESCRIPTION:  THIS IS LOGICAL FILE ORDDTLL1.                *
+     A*                 IT CONTAINS ONE RECORD FORMAT CALLED ODLREC1.*
+     A*                 LOGICAL VIEW OF ORDER DETAIL FILE (ORDDTL)   *
+     A*                 BY LINE ID (LINEID) -- USED FOR DIRECT LINE  *
+     A*                 LOOKUP, E.G. TO DELETE ONE LINE              *
+     A******************************************************************
+     A          R ODLREC1                   PFILE(ORDDTL)
+     A            LINEID
+     A            ORDERID
+     A            ITEMID
+     A            QTY
+     A            PRICE
+     A          K LINEID

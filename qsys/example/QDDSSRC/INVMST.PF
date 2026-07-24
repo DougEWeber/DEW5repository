@@ -15,3 +15,4 @@
      A            QOO            7  0       TEXT('QUANTITY ON ORDER')
      A            LORDDT         8  0       TEXT('LAST ORDER DATE YYYYMMDD')
      A            QPEND          7  0       TEXT('QTY PENDING - HELD ON ORDER')
+     A            CURPRICE       9  2       TEXT('CURRENT PRICE')

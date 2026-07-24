@@ -1,0 +1,14 @@
+     A******************************************************************
+     A* FILE NAME:  ORDDTL                                            *
+     A* RELATED PGMS:  ORDVIEW, ORDENTR, ORDSTAT                       *
+     A* RELATED FILES:  ORDDTLL1, ORDDTLL2 (LOGICAL FILES)             *
+     A* DESCRIPTION:  THIS IS THE PHYSICAL FILE ORDDTL. IT HAS        *
+     A*          ONE RECORD FORMAT CALLED ORDDREC. EACH ROW IS ONE    *
+     A*          LINE ITEM ON AN ORDER (SEE ORDHDR).                  *
+     A******************************************************************
+     A          R ORDDREC
+     A            LINEID         7  0       TEXT('LINE ID')
+     A            ORDERID        7  0       TEXT('ORDER ID')
+     A            ITEMID         5          TEXT('ITEM ID')
+     A            QTY            7  0       TEXT('QUANTITY ORDERED')
+     A            PRICE          9  2       TEXT('PRICE FOR THIS LINE')

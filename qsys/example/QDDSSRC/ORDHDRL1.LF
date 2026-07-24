@@ -1,0 +1,15 @@
+     A******************************************************************
+     A*     FILE NAME:  ORDHDRL1                                      *
+     A*  RELATED PGMS:  ORDVIEW, ORDENTR, ORDSTAT                     *
+     A* RELATED FILES:  ORDHDR  (PHYSICAL FILE)                       *
+     A*   DESCRIPTION:  THIS IS LOGICAL FILE ORDHDRL1.                *
+     A*                 IT CONTAINS ONE RECORD FORMAT CALLED OHLREC1.*
+     A*                 LOGICAL VIEW OF ORDER HEADER FILE (ORDHDR)   *
+     A*                 BY ORDER ID (ORDERID)                        *
+     A******************************************************************
+     A          R OHLREC1                   PFILE(ORDHDR)
+     A            ORDERID
+     A            CUST
+     A            ORDDATE
+     A            ORDSTATE
+     A          K ORDERID

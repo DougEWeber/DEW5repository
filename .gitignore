@@ -3,3 +3,4 @@
 tests/5250/.vendor_state
 tests/5250/.customer_state
 tests/5250/.inventory_state
+tests/5250/.order_state

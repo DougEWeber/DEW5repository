@@ -30,6 +30,12 @@ Dependency Tree Report (*DEPTREE)
     *SRCMBR         *LIBL/QRPGLESRC          (INVSELL)
   *PGM CLLE       LIB1/INVSELTST
     *SRCMBR         *LIBL/QCLSRC          (INVSELTST)
+  *PGM RPGLE      LIB1/ORDENTR
+    *SRCMBR         *LIBL/QRPGLESRC          (ORDENTR)
+  *PGM RPGLE      LIB1/ORDSTAT
+    *SRCMBR         *LIBL/QRPGLESRC          (ORDSTAT)
+  *PGM RPGLE      LIB1/ORDVIEW
+    *SRCMBR         *LIBL/QRPGLESRC          (ORDVIEW)
   *PGM RPGLE      LIB1/SCHNAMRPG
     *SRCMBR         *LIBL/QRPGLESRC          (SCHNAMRPG)
   *PGM RPGLE      LIB1/VNDMNT
@@ -100,6 +106,52 @@ Dependency Tree Report (*DEPTREE)
       *SRCMBR         *LIBL/QDDSSRC          (CUSMSTL1)
       *FILE PF        LIB1/CUSMST
         *SRCMBR         *LIBL/QDDSSRC          (CUSMST)
+  *FILE PF        LIB1/ORDDTL
+    *SRCMBR         *LIBL/QDDSSRC          (ORDDTL)
+  *FILE LF        LIB1/ORDDTLL1
+    *SRCMBR         *LIBL/QDDSSRC          (ORDDTLL1)
+    *FILE PF        LIB1/ORDDTL
+      *SRCMBR         *LIBL/QDDSSRC          (ORDDTL)
+  *FILE LF        LIB1/ORDDTLL2
+    *SRCMBR         *LIBL/QDDSSRC          (ORDDTLL2)
+    *FILE PF        LIB1/ORDDTL
+      *SRCMBR         *LIBL/QDDSSRC          (ORDDTL)
+  *FILE DSPF      LIB1/ORDESCN
+    *SRCMBR         *LIBL/QDDSSRC          (ORDESCN)
+    *FILE LF        LIB1/ORDDTLL2
+      *SRCMBR         *LIBL/QDDSSRC          (ORDDTLL2)
+      *FILE PF        LIB1/ORDDTL
+        *SRCMBR         *LIBL/QDDSSRC          (ORDDTL)
+    *FILE LF        LIB1/ORDHDRL1
+      *SRCMBR         *LIBL/QDDSSRC          (ORDHDRL1)
+      *FILE PF        LIB1/ORDHDR
+        *SRCMBR         *LIBL/QDDSSRC          (ORDHDR)
+  *FILE PF        LIB1/ORDHDR
+    *SRCMBR         *LIBL/QDDSSRC          (ORDHDR)
+  *FILE LF        LIB1/ORDHDRL1
+    *SRCMBR         *LIBL/QDDSSRC          (ORDHDRL1)
+    *FILE PF        LIB1/ORDHDR
+      *SRCMBR         *LIBL/QDDSSRC          (ORDHDR)
+  *FILE DSPF      LIB1/ORDSSCN
+    *SRCMBR         *LIBL/QDDSSRC          (ORDSSCN)
+    *FILE LF        LIB1/ORDDTLL2
+      *SRCMBR         *LIBL/QDDSSRC          (ORDDTLL2)
+      *FILE PF        LIB1/ORDDTL
+        *SRCMBR         *LIBL/QDDSSRC          (ORDDTL)
+    *FILE LF        LIB1/ORDHDRL1
+      *SRCMBR         *LIBL/QDDSSRC          (ORDHDRL1)
+      *FILE PF        LIB1/ORDHDR
+        *SRCMBR         *LIBL/QDDSSRC          (ORDHDR)
+  *FILE DSPF      LIB1/ORDVSCN
+    *SRCMBR         *LIBL/QDDSSRC          (ORDVSCN)
+    *FILE LF        LIB1/ORDDTLL2
+      *SRCMBR         *LIBL/QDDSSRC          (ORDDTLL2)
+      *FILE PF        LIB1/ORDDTL
+        *SRCMBR         *LIBL/QDDSSRC          (ORDDTL)
+    *FILE LF        LIB1/ORDHDRL1
+      *SRCMBR         *LIBL/QDDSSRC          (ORDHDRL1)
+      *FILE PF        LIB1/ORDHDR
+        *SRCMBR         *LIBL/QDDSSRC          (ORDHDR)
   *FILE DSPF      LIB1/SCHNAMD
     *SRCMBR         *LIBL/QDDSSRC          (SCHNAMD)
     *FILE LF        LIB1/CUSMSTL3
@@ -132,6 +184,12 @@ Dependency Tree Report (*DEPTREE)
     *SRCMBR         *LIBL/QCMDSRC          (CUSTMAINT)
   *CMD            LIB1/INVMAINT
     *SRCMBR         *LIBL/QCMDSRC          (INVMAINT)
+  *CMD            LIB1/ORDENTR
+    *SRCMBR         *LIBL/QCMDSRC          (ORDENTR)
+  *CMD            LIB1/ORDSTAT
+    *SRCMBR         *LIBL/QCMDSRC          (ORDSTAT)
+  *CMD            LIB1/ORDVIEW
+    *SRCMBR         *LIBL/QCMDSRC          (ORDVIEW)
   *CMD            LIB1/VNDMAINT
     *SRCMBR         *LIBL/QCMDSRC          (VNDMAINT)
 End of Dependency Tree Report
