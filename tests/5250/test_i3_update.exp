@@ -1,0 +1,59 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Update. Uses the item created by test_i1_add.exp,
+# changes its description/vendor/unit, then reconnects fresh (per the
+# skill's session-reliability note: setup and verification in separate
+# sessions) and displays it again to confirm the change actually took
+# -- and, critically, that the quantities are still zero (there is no
+# way to type into them; this proves the DDS actually protects them,
+# not just that the program never happens to touch them).
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .inventory_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .inventory_state -- run test_i1_add.exp first"
+    exit 1
+}
+source $state_file
+
+# Uppercase throughout -- see the comment in test_i1_add.exp.
+set new_descr "UPDATED WIDGET"
+set new_vend  1
+set new_unit  "BOX"
+
+open_invmaint
+set after_update [update_item $::ITEMID $new_descr $new_vend $new_unit]
+
+if {[string match "*NOT ON FILE*" $after_update] || [string match "*error*" $after_update]} {
+    test_fail "error text present on HDRSCN after Update" $after_update
+}
+if {![string match "*INVENTORY FILE MAINTENANCE*" $after_update]} {
+    test_fail "did not land back on HDRSCN after Update" $after_update
+}
+close_session
+
+# Fresh session to verify the update was actually persisted.
+open_invmaint
+set screen [display_item $::ITEMID]
+
+foreach {label val} [list Description $new_descr Unit $new_unit] {
+    if {![string match "*$val*" $screen]} {
+        test_fail "expected updated $label '$val' not found on Display screen" $screen
+    }
+}
+if {![string match "*0000000*" $screen]} {
+    test_fail "quantities are no longer all zero after Update -- they should be uneditable" $screen
+}
+
+set f [open $state_file w]
+puts $f "set ::ITEMID \"$::ITEMID\""
+puts $f "set ::DESCR  \"$new_descr\""
+puts $f "set ::VEND   \"$new_vend\""
+puts $f "set ::UNIT   \"$new_unit\""
+close $f
+
+pass "item $::ITEMID updated and re-verified via Display in a fresh session; quantities still zero"

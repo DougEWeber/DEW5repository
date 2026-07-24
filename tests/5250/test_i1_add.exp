@@ -1,0 +1,40 @@
+#!/usr/bin/env expect
+#
+# Sanity test: Add. Creates a new inventory item with a unique,
+# easily-identified description, referencing an existing vendor
+# (00001), confirms no error appears back on HDRSCN, then saves state
+# for the other tests.
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+
+# ITEMID is user-supplied (5-char alphanumeric), like customer number --
+# derive a short unique-enough suffix from the clock to avoid colliding
+# with a previous run's leftover item.
+set itemid "Z[format %04d [expr {[clock seconds] % 10000}]]"
+# Uppercase throughout -- INVBLD's input fields uppercase whatever is
+# typed, so a mixed-case expected value would never match the screen.
+set descr "ZZTEST WIDGET"
+set vend  1
+set unit  "EACH"
+
+open_invmaint
+set after [add_item $itemid $descr $vend $unit]
+
+if {[string match "*ALREADY ON FILE*" $after] || [string match "*NOT ON FILE*" $after] || [string match "*error*" $after]} {
+    test_fail "error text present on HDRSCN after Add" $after
+}
+if {![string match "*INVENTORY FILE MAINTENANCE*" $after]} {
+    test_fail "did not land back on HDRSCN after Add" $after
+}
+
+set f [open [file join [file dirname [info script]] .inventory_state] w]
+puts $f "set ::ITEMID \"$itemid\""
+puts $f "set ::DESCR  \"$descr\""
+puts $f "set ::VEND   \"$vend\""
+puts $f "set ::UNIT   \"$unit\""
+close $f
+
+pass "added item $itemid ($descr, vendor $vend)"

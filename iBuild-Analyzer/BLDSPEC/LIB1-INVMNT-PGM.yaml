@@ -1,0 +1,32 @@
+---
+targets:
+  LIB1-INVMNT-PGM :
+    objlib: LIB1
+    objname: INVMNT
+    objtype: PGM
+    objattr: RPGLE
+    protected: no
+    excluded: no
+    requisites :
+      -
+        name: QRPGLESRC
+        lib: "*LIBL"
+        objtype: "FILE"
+        member: INVMNT
+    requisiteyamlrecords :
+      - LIBL-QRPGLESRC-SRCMBR-INVMNT
+    command: CRTBNDRPG
+    parameters:
+      - "PGM($(LIB1)/INVMNT)"
+      - "USRPRF(*USER)"
+      - "DFTACTGRP(*YES)"
+      - "SRCFILE(QRPGLESRC)"
+      - "SRCMBR(INVMNT)"
+      - "TGTCCSID(37)"
+      - "SRTSEQ(*HEX)"
+      - "LANGID(*JOBRUN)"
+  LIBL-QRPGLESRC-SRCMBR-INVMNT :
+    objlib: "*LIBL"
+    objname: QRPGLESRC
+    objtype: SRCMBR
+    mbrname: INVMNT

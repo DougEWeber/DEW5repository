@@ -1,0 +1,28 @@
+#!/usr/bin/env expect
+#
+# Sanity test: duplicate-add rejection. Item ID is user-supplied (like
+# customer number, unlike vendor number), so Add has a real collision
+# case: attempting to add an item ID that's already on file must be
+# rejected with "ITEM ALREADY ON FILE", not silently overwrite the
+# existing record.
+
+source [file join [file dirname [info script]] .. .. .claude 5250-config.exp]
+source [file join [file dirname [info script]] lib.exp]
+source [file join [file dirname [info script]] report_helpers.exp]
+source [file join [file dirname [info script]] invmnt_helpers.exp]
+
+set state_file [file join [file dirname [info script]] .inventory_state]
+if {![file exists $state_file]} {
+    puts "FAIL: no .inventory_state -- run test_i1_add.exp first"
+    exit 1
+}
+source $state_file
+
+open_invmaint
+set screen [add_duplicate_item $::ITEMID]
+
+if {![string match "*ALREADY ON FILE*" $screen]} {
+    test_fail "expected 'ITEM ALREADY ON FILE' when re-adding item $::ITEMID" $screen
+}
+
+pass "re-adding existing item $::ITEMID is correctly rejected"

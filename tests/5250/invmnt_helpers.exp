@@ -1,0 +1,151 @@
+#!/usr/bin/env expect
+#
+# App-specific helpers for driving the INVMAINT/INVMNT (inventory
+# maintenance) program, built on top of lib.exp's generic primitives.
+# Source this after config.exp, lib.exp, and report_helpers.exp (for
+# drain_screen).
+#
+# Item ID is user-supplied (5-char alphanumeric), like customer number
+# and unlike vendor number, so Add has a real duplicate-rejection case.
+# Quantities (QOH/QOO/QPEND) and last-order-date are never editable
+# through this program -- only INVSELL (a separate, non-interactive API
+# program; see invsell_call) adjusts QOH/QPEND, and only by confirming a
+# sale against pending quantity.
+
+# Signs on, ADDLIBLEs $::LIB, launches INVMAINT. Returns the settled
+# HDRSCN screen text.
+proc open_invmaint {} {
+    global spawn_id timeout
+    connect_and_signon
+    add_library $::LIB
+    send -- "INVMAINT\r"
+    return [drain_screen]
+}
+
+# DESCR (50A), VEND (5S 0), and UNIT (10A) are all typed padded/zero-
+# filled to their exact declared width. Two reasons:
+#  - On Update, these fields arrive pre-filled with the item's current
+#    value. A shorter replacement only overtypes the leading characters,
+#    leaving the old value's tail in place (e.g. "FIXED WIDGET" typed
+#    over "BOXATED WIDGET" produces "FIXED WIDGETET"; "1" typed over
+#    "00001" produces "10001") -- the "numeric field with a visible
+#    default digit" / stale-tail gotcha. Exact-width entry guarantees a
+#    clean overwrite regardless of what was there before.
+#  - Exact-width entry also *exactly fills* each field, which triggers
+#    the terminal's own auto-advance to the next field -- so these procs
+#    send the three values concatenated with NO Tab characters between
+#    them at all. Sending an explicit Tab after an exactly-filled field
+#    double-advances (skips the next field entirely) -- the auto-advance
+#    gotcha. Padding to exact width everywhere sidesteps that whole
+#    class of bug rather than reasoning about it field by field.
+# Add doesn't strictly need this (fields start blank) but it's applied
+# there too for identical, predictable behavior on both paths.
+proc pad50 {s} { return [format "%-50s" $s] }
+proc pad10 {s} { return [format "%-10s" $s] }
+proc zpad5 {n} { return [format "%05d" $n] }
+
+# From HDRSCN: key an item ID, press F5 (Add), fill in description/
+# vendor/unit, submit. Returns the settled HDRSCN screen text shown
+# afterward (check it for "VENDOR NOT ON FILE" if testing FK rejection
+# -- on that error the program redisplays the same Add screen with the
+# entered data intact, so submitting again with a valid vendor would
+# proceed, but this proc only performs one round of data entry).
+proc add_item {itemid descr vend unit} {
+    global spawn_id timeout
+    send -- "$itemid"
+    press F5
+    drain_screen
+    send -- "[pad50 $descr][zpad5 $vend][pad10 $unit]\r"
+    return [drain_screen]
+}
+
+# From HDRSCN: key an item ID and press F5 (Add), for the case where the
+# ID is expected to already be on file. AddSub checks for an existing
+# record and bails out (leavesr) BEFORE ever showing the add screen, so
+# unlike add_item, this does not attempt to fill in any fields.
+proc add_duplicate_item {itemid} {
+    global spawn_id timeout
+    send -- "$itemid"
+    press F5
+    return [drain_screen]
+}
+
+# From HDRSCN: key an item ID and press F8 (Display). Returns the
+# settled screen text (includes the vendor's name, looked up and
+# read-only).
+proc display_item {itemid} {
+    global spawn_id timeout
+    send -- "$itemid"
+    press F8
+    return [drain_screen]
+}
+
+# From HDRSCN: key an item ID, press F6 (Update), overtype description/
+# vendor/unit with new values, submit. Quantities are shown but are
+# protected fields -- there is nothing to type into them. Returns the
+# settled HDRSCN screen text shown afterward. See the pad50/zpad5/pad10
+# comment above for why every field is sent at exact width with no Tabs.
+proc update_item {itemid descr vend unit} {
+    global spawn_id timeout
+    send -- "$itemid"
+    press F6
+    drain_screen
+    send -- "[pad50 $descr][zpad5 $vend][pad10 $unit]\r"
+    return [drain_screen]
+}
+
+# From HDRSCN: press F9 (List). Returns the settled screen text.
+proc list_items_screen {} {
+    global spawn_id timeout
+    press F9
+    return [drain_screen]
+}
+
+# Signs on fresh and calls INVSELL directly via the Command Entry
+# line's generic CALL command, while still at the "===>" prompt --
+# there is no CMD wrapper for INVSELL, by design (it's an API program,
+# not a UI function). Unlike open_invmaint/open_custmaint, this does NOT
+# launch an interactive program first: INVMNT's HDRSCN has no command
+# line of its own, so CALL has to be sent here, before anything
+# interactive takes over the screen. Quoted values are character
+# parameters (ItemId, Success, Msg); the unquoted qty is numeric
+# (QtySold).
+#
+# CALL's PARM literals map directly onto the called program's parameter
+# bytes -- unlike a real prototype-checked call, nothing pads a short
+# literal out to the declared length for you. itemid MUST be passed as
+# exactly 5 characters (pad with trailing spaces if shorter) or the
+# 5-byte ItemId slot gets under-filled; Msg is padded here to exactly 50
+# spaces to match its declared length for the same reason.
+#
+# INVSELL's OUT parameters (Success/Msg) are not observable on screen
+# this way (CALL doesn't echo them) -- callers should verify INVSELL's
+# real effect black-box, via display_item's QOH/QPEND before and after
+# (in a separate open_invmaint session).
+proc invsell_call {itemid qty} {
+    global spawn_id timeout
+    connect_and_signon
+    add_library $::LIB
+    set msg50 [string repeat { } 50]
+    send -- "CALL PGM($::LIB/INVSELL) PARM('$itemid' $qty ' ' '$msg50')\r"
+    return [drain_screen]
+}
+
+# Same idea as invsell_call, but goes through INVSELTST (see its own
+# header comment in qsys/example/QCLSRC/INVSELTST.CL) instead of calling
+# INVSELL directly. INVSELTST's parameters are all plain character --
+# including qty, passed as a 7-digit zero-padded numeric STRING, not a
+# CALL PARM numeric literal -- which sidesteps the decimal-data crash
+# above, and it echoes INVSELL's Success/Msg back via SNDPGMMSG, which
+# shows up inline on the Command Entry screen's message area. Prefer
+# this over invsell_call whenever the actual Success/Msg values matter,
+# not just INVSELL's black-box effect on QOH/QPEND.
+proc invseltst_call {itemid qty} {
+    global spawn_id timeout
+    connect_and_signon
+    add_library $::LIB
+    set qtypad [format "%07d" $qty]
+    set msg50 [string repeat { } 50]
+    send -- "CALL PGM($::LIB/INVSELTST) PARM('$itemid' '$qtypad' ' ' '$msg50')\r"
+    return [drain_screen]
+}

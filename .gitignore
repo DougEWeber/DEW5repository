@@ -2,3 +2,4 @@
 .claude/5250-config.exp
 tests/5250/.vendor_state
 tests/5250/.customer_state
+tests/5250/.inventory_state
