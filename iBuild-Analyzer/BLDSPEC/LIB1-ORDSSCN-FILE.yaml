@@ -14,22 +14,17 @@ targets:
         objtype: "FILE"
         member: ORDSSCN
       -
-        name: ORDHDRL1
-        lib: "*LIBL"
-        objtype: "FILE"
-      -
         name: ORDDTLL2
         lib: "*LIBL"
         objtype: "FILE"
       -
-        name: INVMSTL1
+        name: ORDHDRL1
         lib: "*LIBL"
         objtype: "FILE"
     requisiteyamlrecords :
       - LIBL-QDDSSRC-SRCMBR-ORDSSCN
-      - LIB1-ORDHDRL1-FILE
       - LIB1-ORDDTLL2-FILE
-      - LIB1-INVMSTL1-FILE
+      - LIB1-ORDHDRL1-FILE
     command: EDOCRTOBJ
     parameters:
       - "BLDTGT($(LIB1)/ORDSSCN)"
